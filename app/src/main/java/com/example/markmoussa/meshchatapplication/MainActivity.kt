@@ -13,14 +13,12 @@ class MainActivity : AppCompatActivity() {
 
         val signInButton = findViewById<Button>(R.id.signInButton) as Button
         signInButton.setOnClickListener {
-//            Toast.makeText(this, "Just a test!", Toast.LENGTH_SHORT).show()
             val intent = Intent(this, SignInActivity::class.java)
             startActivity(intent)
         }
 
-        val signUpButton = findViewById<Button>(R.id.signInButton) as Button
+        val signUpButton = findViewById<Button>(R.id.signUpButton) as Button
         signUpButton.setOnClickListener {
-//            Toast.makeText(this, "Just a test!", Toast.LENGTH_SHORT).show()
             val intent = Intent(this, SignUpActivity::class.java)
             startActivity(intent)
         }

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<!-- Used my signal text export to populate list of messages to use for development -->
+<smses count="8">
+ <sms address="+18133177154" contact_name="Angel Rivera" date="1519443125816" readable_date="Fri, 23 Feb 2018 22:32:05 EST" type="2" subject="null" body="Yeah" toa="null" sc_toa="null" service_center="null" read="1" status="-1" locked="0" />
+ <sms address="+18133177154" contact_name="Angel Rivera" date="1519454567857" readable_date="Sat, 24 Feb 2018 01:42:47 EST" type="1" subject="null" body="Listen go this right now &#10;https://itunes.apple.com/us/album/creation-comes-alive-feat-sonia/1288742033?i=1288742552" toa="null" sc_toa="null" service_center="null" read="1" status="-1" locked="0" />
+ <sms address="+18133177154" contact_name="Angel Rivera" date="1519454876055" readable_date="Sat, 24 Feb 2018 01:47:56 EST" type="1" subject="null" body="Also it totally does not sound like Porter I don&apos;t know why I made that comparison that I&apos;m listening to it lol" toa="null" sc_toa="null" service_center="null" read="1" status="-1" locked="0" />
+ <sms address="+18137583337" contact_name="Jakleen Moussa" date="1519489254597" readable_date="Sat, 24 Feb 2018 11:20:54 EST" type="1" subject="null" body="Good morning Mark. When your spring break?" toa="null" sc_toa="null" service_center="null" read="1" status="-1" locked="0" />
+ <sms address="+18137583337" contact_name="Jakleen Moussa" date="1519489850318" readable_date="Sat, 24 Feb 2018 11:30:50 EST" type="2" subject="null" body="March 12 - 18" toa="null" sc_toa="null" service_center="null" read="1" status="-1" locked="0" />
+ <sms address="+18137583337" contact_name="Jakleen Moussa" date="1519489855746" readable_date="Sat, 24 Feb 2018 11:30:55 EST" type="2" subject="null" body="Are you going to the hospital today?" toa="null" sc_toa="null" service_center="null" read="1" status="-1" locked="0" />
+ <sms address="+18137583337" contact_name="Jakleen Moussa" date="1519489892025" readable_date="Sat, 24 Feb 2018 11:31:32 EST" type="1" subject="null" body="Yes" toa="null" sc_toa="null" service_center="null" read="1" status="-1" locked="0" />
+ <sms address="+18137583337" contact_name="Jakleen Moussa" date="1519490087818" readable_date="Sat, 24 Feb 2018 11:34:47 EST" type="2" subject="null" body="What time?" toa="null" sc_toa="null" service_center="null" read="1" status="-1" locked="0" />
+</smses>

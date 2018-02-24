@@ -2,17 +2,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.markmoussa.meshchatapplication">
 
-
     <!-- Hype permissions -->
     <!-- Permissions needed to run Wi-Fi Direct -->
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
     <!-- Permissions needed to run both Wi-Fi Direct and Infrastructure Wi-Fi -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!-- Permissions needed to run Bluetooth Low Energy -->
-    <uses-feature android:name="android.hardware.bluetooth_le" android:required="true" />
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="true" />
+
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
@@ -25,7 +27,6 @@
 
     <!-- Permission required for authentication, always required -->
     <uses-permission android:name="android.permission.INTERNET" />
-
 
     <application
         android:allowBackup="true"
@@ -42,9 +43,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".SignInActivity" />
-        <activity android:name=".SignUpActivity"></activity>
+        <activity android:name=".SignUpActivity" />
+        <activity android:name=".MessageListActivity" />
     </application>
-
-
 
 </manifest>
