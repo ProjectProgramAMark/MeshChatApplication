@@ -1,5 +1,9 @@
 package com.example.markmoussa.meshchatapplication
 
+/**
+ * Created by markmoussa on 2/24/18.
+ */
+
 import android.content.Context
 import android.support.v7.widget.RecyclerView
 import android.text.format.DateUtils
@@ -13,7 +17,7 @@ import com.hypelabs.hype.Message
 
 
 // BaseMessage is specific to SendBird, fix later
-class MessageListAdapter(private val mContext: Context, private val mMessageList: List<Message>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class MessageListAdapter(private val mContext: Context, private val mMessageList: List<DummyMessage>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun getItemCount(): Int {
         return mMessageList.size
@@ -60,7 +64,7 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
     // Passes the message object to a ViewHolder so that the contents can be bound to UI.
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
 
-        // UserMessage is specific to SendBird, fix later
+        // TODO: UserMessage is specific to SendBird, fix later
         val message = mMessageList[position]
 
         when (holder.itemViewType) {
@@ -80,8 +84,8 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
         }
 
         // UserMessage is specific to SendBird, fix later
-        internal fun bind(message: Message) {
-            messageText.text = message.data.toString()
+        internal fun bind(message: DummyMessage) {
+            messageText.text = message.message
 
             // Format the stored timestamp into a readable String using method.
             // Utils specific to SendBird, fix later
@@ -104,8 +108,8 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
         }
         // UserMessage is specific to SendBird, fix later
 
-        internal fun bind(message: Message) {
-            messageText.text = message.data.toString()
+        internal fun bind(message: DummyMessage) {
+            messageText.text = message.message
 
             // Format the stored timestamp into a readable String using method.
             // TODO: Replace HOUR_IN_MILLIS and FORMAT_SHOW_TIME to get metadata from Hype Messages

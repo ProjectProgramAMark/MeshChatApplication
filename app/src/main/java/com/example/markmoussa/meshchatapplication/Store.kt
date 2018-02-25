@@ -1,5 +1,9 @@
 package com.example.markmoussa.meshchatapplication
 
+// THIS FILE WAS TAKEN DIRECTLY FROM THE HYPELABS ANDROID DEMO.
+// ALL CREDIT FOR THIS FILE GOES DIRECTLY TO HYPELABS
+// link: https://github.com/Hype-Labs/HypeChatDemo.android
+
 import com.hypelabs.hype.Instance
 import com.hypelabs.hype.Message
 

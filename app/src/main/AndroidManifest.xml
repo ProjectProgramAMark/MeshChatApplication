@@ -45,6 +45,7 @@
         <activity android:name=".SignInActivity" />
         <activity android:name=".SignUpActivity" />
         <activity android:name=".MessageListActivity" />
+        <activity android:name=".ConversationListActivity"></activity>
     </application>
 
 </manifest>

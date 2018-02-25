@@ -1,5 +1,9 @@
 package com.example.markmoussa.meshchatapplication
 
+/**
+ * Created by markmoussa on 2/24/18.
+ */
+
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
