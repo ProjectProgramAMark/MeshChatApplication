@@ -19,8 +19,6 @@ class ConversationListAdapter(private val mContext: Context, private val mConver
         return mConversationList.size
     }
 
-    // TODO: THIS TODO TO BE DONE FIRST
-    // TODO: Set onItemClickListener to have the convo go to MessageListActivity. RecyclerView does not have a native one so we'll have to create our own
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
         val conversation = mConversationList[position]
 
