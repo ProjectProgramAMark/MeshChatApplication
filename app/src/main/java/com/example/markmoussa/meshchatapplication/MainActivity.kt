@@ -27,4 +27,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
     }
+
+    // Instantiating Hype framework here
+//    override fun onStart() {
+//        super.onStart()
+//        val hypeFramework = application as HypeLifeCycle
+//    }
 }

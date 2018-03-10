@@ -20,10 +20,10 @@ import kotlin.collections.HashMap
 class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, MessageObserver, HypeKeepForeground.LifecycleDelegate {
 
     // The stores object keeps track of message storage associated with each instance (peer)
+    // TODO: Save this store onto either the user's phone, or on database (whichever I end up implementing)
     private var stores: MutableMap<String, Store>? = null
 
     override fun onApplicationStart(app: Application) {
-
         requestHypeToStart()
     }
 
@@ -33,7 +33,6 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
     }
 
     protected fun requestHypeToStart() {
-
         Hype.setContext(applicationContext)
 
         // Add this as an Hype observer
@@ -166,12 +165,14 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
         setLifecyleDelegate(this)
     }
 
-    fun getStores(): MutableMap<String, Store>? {
+    fun getStores(): MutableMap<String, Store> {
         if (stores == null) {
             stores = HashMap()
+            return stores as MutableMap<String, Store>
         }
 
-        return stores
+        return stores as MutableMap<String, Store>
+
     }
 
     fun addToResolvedInstancesMap(instance: Instance) {

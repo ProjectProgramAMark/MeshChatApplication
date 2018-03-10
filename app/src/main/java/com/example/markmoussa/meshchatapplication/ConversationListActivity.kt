@@ -4,7 +4,6 @@ package com.example.markmoussa.meshchatapplication
  * Created by markmoussa on 2/24/18.
  */
 
-import android.content.DialogInterface
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -13,8 +12,11 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.View
+import com.hypelabs.hype.Message
+import kotlinx.android.synthetic.main.item_conversation.*
 
-class ConversationListActivity : AppCompatActivity() {
+
+class ConversationListActivity : AppCompatActivity(), Store.Delegate {
 
     // writing dummy data here for conversations. remove when figured out how to import conversations
     val user1: User = User("Mark", null)
@@ -46,7 +48,15 @@ class ConversationListActivity : AppCompatActivity() {
             override fun onItemClicked(recyclerView: RecyclerView, position: Int, v: View) {
                 // when item (conversation) is clicked, go to that conversation's message list
                 Log.i("TEST: ", "This is a test, item number " + position.toString() + " picked.")
+                val contactName = userNameTextView.text
+                val hypeFramework = application as HypeLifeCycle
+                /* TODO: THIS TODO FIRST: Fix null reference error here, figure out how/where to populate Store with all previous conversations
+                 * and once populated use store to replace DummyMessages for conversations list.
+                 */
+                val contactStore = hypeFramework.getStores()[contactName]
+                contactStore?.delegate = this@ConversationListActivity
                 val intent = Intent(this@ConversationListActivity, MessageListActivity::class.java)
+                intent.putExtra("StoreIdentifier", contactStore!!.instance.stringIdentifier)
                 startActivity(intent)
             }
         })
@@ -73,4 +83,20 @@ class ConversationListActivity : AppCompatActivity() {
             }
         })
     }
+
+
+    override fun onMessageAdded(store: Store, message: Message) {
+        updateInterface()
+    }
+
+    private fun updateInterface() {
+        this.runOnUiThread {
+            val recyclerView = findViewById<RecyclerView>(R.id.reyclerview_conversation_list) as RecyclerView
+
+            (recyclerView.adapter as ConversationListAdapter).notifyDataSetChanged()
+        }
+    }
+
+
+
 }
