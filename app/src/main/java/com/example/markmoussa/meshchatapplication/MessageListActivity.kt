@@ -43,26 +43,31 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
 
     override fun onStart() {
         super.onStart()
-        val store = getStore()
-        store.delegate = this
-        store.lastReadIndex = store.getMessages()!!.size
+        // checking to see which user chat they want, or if it's a new message
+        // TODO: made a new separate class for new messages for now, condense that into this class when I have everything set up
+        val user: String? = intent.getStringExtra("user")
+        if(user != null) {
+            val store = getStore()
+            store.delegate = this
+            store.lastReadIndex = store.getMessages()!!.size
 
-        val chatBox = findViewById<EditText>(R.id.edittext_chatbox) as EditText
-        val sendButton = findViewById<Button>(R.id.button_chatbox_send) as Button
+            val chatBox = findViewById<EditText>(R.id.edittext_chatbox) as EditText
+            val sendButton = findViewById<Button>(R.id.button_chatbox_send) as Button
 
-        // Sending message
-        sendButton.setOnClickListener {
-            val text = chatBox.text.toString()
-            if(text.isEmpty()) {
-                return@setOnClickListener
-            }
-            try {
-                Log.v(this@MessageListActivity::class.simpleName, "Send Message")
-                val message = sendMessage(text, store.instance)
-                chatBox.setText("")
-                store.add(message)
-            } catch(e: UnsupportedEncodingException) {
-                e.printStackTrace()
+            // Sending message
+            sendButton.setOnClickListener {
+                val text = chatBox.text.toString()
+                if(text.isEmpty()) {
+                    return@setOnClickListener
+                }
+                try {
+                    Log.v(this@MessageListActivity::class.simpleName, "Send Message")
+                    val message = sendMessage(text, store.instance)
+                    chatBox.setText("")
+                    store.add(message, this)
+                } catch(e: UnsupportedEncodingException) {
+                    e.printStackTrace()
+                }
             }
         }
 
@@ -96,7 +101,9 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
 
     override fun onBackPressed() {
         super.onBackPressed()
-        getStore().lastReadIndex = getStore().getMessages()!!.size
+        if(getStore() != null) {
+            getStore()!!.lastReadIndex = getStore()!!.getMessages()!!.size
+        }
     }
 
     // getting Store of this chat (which is where messages are stored)
@@ -105,6 +112,6 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
         val hypeFramework = application as HypeLifeCycle
         val storeIdentifier = intent.getStringExtra("StoreIdentifier")
 
-        return hypeFramework.getStores()[storeIdentifier]!!
+        return hypeFramework.getAllStores()[storeIdentifier]!!
     }
 }

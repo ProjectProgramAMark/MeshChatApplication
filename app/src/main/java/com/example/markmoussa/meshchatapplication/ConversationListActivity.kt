@@ -11,6 +11,8 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import com.hypelabs.hype.Message
 import kotlinx.android.synthetic.main.item_conversation.*
@@ -30,7 +32,7 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate {
     val convo4: Conversation = Conversation(user4, null)
 
     // TODO: Replace with imported conversations when figured out how to do such
-    private var mConversationListList: List<Conversation> = listOf(convo1, convo2, convo3, convo4)
+//    private var mConversationListList: List<Conversation> = listOf(convo1, convo2, convo3, convo4)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,7 +41,8 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate {
         var mConversationListAdapter: ConversationListAdapter? = null
         mConversationListRecycler = findViewById<RecyclerView>(R.id.reyclerview_conversation_list)
         mConversationListRecycler!!.layoutManager = LinearLayoutManager(this)
-        mConversationListAdapter = ConversationListAdapter(this, mConversationListList)
+        val hypeFramework = applicationContext as HypeLifeCycle
+        mConversationListAdapter = ConversationListAdapter(this, hypeFramework.getAllStores().keys.toList())
         mConversationListRecycler.adapter = mConversationListAdapter
 
         // The onItemClick and onItemLongClick needs to be put here and not in the adapter since it's custom-defined and directly
@@ -49,14 +52,11 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate {
                 // when item (conversation) is clicked, go to that conversation's message list
                 Log.i("TEST: ", "This is a test, item number " + position.toString() + " picked.")
                 val contactName = userNameTextView.text
-                val hypeFramework = application as HypeLifeCycle
-                /* TODO: THIS TODO FIRST: Fix null reference error here, figure out how/where to populate Store with all previous conversations
-                 * and once populated use store to replace DummyMessages for conversations list.
-                 */
-                val contactStore = hypeFramework.getStores()[contactName]
+                val hypeFramework = applicationContext as HypeLifeCycle
+                val contactStore = hypeFramework.getAllStores()[contactName]
                 contactStore?.delegate = this@ConversationListActivity
                 val intent = Intent(this@ConversationListActivity, MessageListActivity::class.java)
-                intent.putExtra("StoreIdentifier", contactStore!!.instance.stringIdentifier)
+                intent.putExtra("StoreIdentifier", contactStore?.instance?.stringIdentifier)
                 startActivity(intent)
             }
         })
@@ -84,9 +84,25 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate {
         })
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_conversation_list, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when(item!!.itemId) {
+            R.id.newMessageMenuButton -> {
+                val intent = Intent(this, NewMessageActivity::class.java)
+                startActivity(intent)
+                return true
+            }
+            else -> return super.onOptionsItemSelected(item)
+        }
+    }
 
     override fun onMessageAdded(store: Store, message: Message) {
         updateInterface()
+
     }
 
     private fun updateInterface() {

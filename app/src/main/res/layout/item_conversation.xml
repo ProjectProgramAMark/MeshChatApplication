@@ -24,7 +24,6 @@
         tools:layout_editor_absoluteX="69dp" />
 
 
-
     <ImageView
         android:id="@+id/profilePicImageView"
         android:layout_width="42dp"

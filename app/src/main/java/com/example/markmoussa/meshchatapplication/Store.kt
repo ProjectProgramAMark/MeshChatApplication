@@ -4,6 +4,7 @@ package com.example.markmoussa.meshchatapplication
 // ALL CREDIT FOR THIS FILE GOES DIRECTLY TO HYPELABS
 // link: https://github.com/Hype-Labs/HypeChatDemo.android
 
+import android.content.Context
 import com.hypelabs.hype.Instance
 import com.hypelabs.hype.Message
 
@@ -31,13 +32,17 @@ class Store(val instance: Instance) {
         this.lastReadIndex = 0
     }
 
-    fun add(message: Message) {
+    // need the context in order to be able to access setStores function which lives in HypeLifeCycle
+    // because Stores is a singleton class
+    fun add(message: Message, context: Context) {
 
         getMessages()!!.add(message)
-
+        val hypeFramework = context.applicationContext as HypeLifeCycle
+         hypeFramework.setStores(instance.stringIdentifier, this)
         val delegate = delegate
 
         delegate?.onMessageAdded(this, message)
+
     }
 
     fun getMessages(): Vector<Message>? {
@@ -52,4 +57,6 @@ class Store(val instance: Instance) {
 
         return lastReadIndex < getMessages()!!.size
     }
+
+    // TODO: write a function to update the stores value's last read index (here and in HypeLifeCycle)
 }

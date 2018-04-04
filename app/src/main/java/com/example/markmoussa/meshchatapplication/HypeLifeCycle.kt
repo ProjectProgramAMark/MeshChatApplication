@@ -14,14 +14,20 @@ import com.hypelabs.hype.MessageInfo
 import com.hypelabs.hype.MessageObserver
 import com.hypelabs.hype.NetworkObserver
 import com.hypelabs.hype.StateObserver
+import java.io.*
 import kotlin.collections.HashMap
+import kotlin.properties.Delegates
 
 
 class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, MessageObserver, HypeKeepForeground.LifecycleDelegate {
 
+    // TODO: Consider moving stores to a different class (must be a class within the same lifetime of the app, a.k.a. an activity
     // The stores object keeps track of message storage associated with each instance (peer)
-    // TODO: Save this store onto either the user's phone, or on database (whichever I end up implementing)
-    private var stores: MutableMap<String, Store>? = null
+    private var stores: HashMap<String, Store> by Delegates.observable(HashMap()) {
+        _, _, _ -> updateStoreFile()
+    }
+
+    private lateinit var dirPath: File
 
     override fun onApplicationStart(app: Application) {
         requestHypeToStart()
@@ -32,7 +38,7 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
         requestHypeToStop()
     }
 
-    protected fun requestHypeToStart() {
+    private fun requestHypeToStart() {
         Hype.setContext(applicationContext)
 
         // Add this as an Hype observer
@@ -55,6 +61,8 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
 
     override fun onHypeStart() {
         Log.i(TAG, "Hype started!")
+        Log.i(TAG, "Loading store from file")
+        readStoreFile()
     }
 
     override fun onHypeStop(error: Error?) {
@@ -122,10 +130,10 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
 
         Log.i(TAG, String.format("Hype got a message from: %s", instance.stringIdentifier))
 
-        val store = getStores()!![instance.stringIdentifier]
+        val store = getAllStores()[instance.stringIdentifier]
 
         // Storing the message triggers a reload update in the ChatActivity
-        store!!.add(message)
+        store!!.add(message, this)
 
         // TODO: Add a contact activity to update contacts
         /*
@@ -160,25 +168,62 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
     override fun onCreate() {
 
         super.onCreate()
-
-        // See HypeLifeCycle.kt
         setLifecyleDelegate(this)
+
+        // have to assign file directory here because context of app is needed for it and that is
+        // not available until onCreate() is called
+        dirPath = this.filesDir
+        // setting stores to read file here instead of at the top because readStoreFile() needs
+        // dirPath in order to proceed, and dirPath is still null when stores is instantiated
+        stores = readStoreFile()
     }
 
-    fun getStores(): MutableMap<String, Store> {
-        if (stores == null) {
-            stores = HashMap()
-            return stores as MutableMap<String, Store>
+    fun getAllStores(): HashMap<String, Store> {
+        return stores
+    }
+
+    // adds message to store and triggers updating store file in memory
+    fun setStores(storeIdentifier: String, store: Store) {
+        stores[storeIdentifier] = store
+    }
+
+    private fun readStoreFile(): HashMap<String, Store> {
+        val storeFile = File(dirPath, "storeFile")
+        if(!(storeFile.exists())) {
+            storeFile.createNewFile()
         }
+        try {
+            val fis = FileInputStream(storeFile)
+            val ois = ObjectInputStream(fis)
+            val result = ois.readObject() as HashMap<String, Store>
+            ois.close()
+            return result
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return HashMap()
+    }
 
-        return stores as MutableMap<String, Store>
-
+    fun updateStoreFile() {
+        try {
+            val storeFile = File(dirPath, "storeFile")
+            if(!(storeFile.exists())) {
+                storeFile.createNewFile()
+            }
+            val fos = FileOutputStream(storeFile)
+            val oos = ObjectOutputStream(fos)
+            oos.writeObject(getAllStores())
+            oos.close()
+        } catch(e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     fun addToResolvedInstancesMap(instance: Instance) {
         // Instances should be strongly kept by some data structure. Their identifiers
         // are useful for keeping track of which instances are ready to communicate.
-        getStores()!![instance.stringIdentifier] = Store(instance)
+        getAllStores()[instance.stringIdentifier] = Store(instance)
+        setStores(instance.stringIdentifier, Store(instance))
 
         // TODO: Add a contact activity to update contacts
         /*
@@ -193,7 +238,8 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
     fun removeFromResolvedInstancesMap(instance: Instance) {
         // Cleaning up is always a good idea. It's not possible to communicate with instances
         // that were previously lost.
-        getStores()!!.remove(instance.stringIdentifier)
+        getAllStores()!!.remove(instance.stringIdentifier)
+
 
         // TODO: Add a contact activity to update contacts
         /*

@@ -13,8 +13,9 @@ import java.util.*
  * Created by markmoussa on 2/24/18.
  */
 
-
-class ConversationListAdapter(private val mContext: Context, private val mConversationList: List<Conversation>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+//TODO : Once I figure out how to get timestamps, I'll be able to pass in Conversations into the Adapter instead of string
+// TODO: for now, just have mConversationList as List<String>. When I figure that out, replace with List<Conversation>
+class ConversationListAdapter(private val mContext: Context, private val mConversationList: List<String>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun getItemCount(): Int {
         return mConversationList.size
     }
@@ -49,9 +50,11 @@ class ConversationListAdapter(private val mContext: Context, private val mConver
             timestampText = itemView.findViewById(R.id.timestampTextView)
             profilePicImage = itemView.findViewById<ImageView>(R.id.profilePicImageView) as ImageView
         }
-
-        internal fun bind(conversation: Conversation) {
-            usernameText.text = conversation.user?.nickname
+        // TODO: change this back to type Conversation once TODO at top of class if finished
+        internal fun bind(conversation: String) {
+             usernameText.text = conversation
+            // Replace with this once conversation goes back to string
+            // usernameText.text = conversation.user?.nickname
             // TODO: Figure out how to search for user in HypeLabs Messages to display their conversation thread
             messagePreviewText.text = "Dummy text here"
             // TODO: Find out how to get timestamp of last message from HypeLabs Messages
