@@ -17,7 +17,7 @@ import com.hypelabs.hype.Message
 
 
 // BaseMessage is specific to SendBird, fix later
-class MessageListAdapter(private val mContext: Context, private val mMessageList: List<DummyMessage>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class MessageListAdapter(private val mContext: Context, private val mMessageList: List<Message>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun getItemCount(): Int {
         return mMessageList.size
@@ -84,8 +84,8 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
         }
 
         // UserMessage is specific to SendBird, fix later
-        internal fun bind(message: DummyMessage) {
-            messageText.text = message.message
+        internal fun bind(message: Message) {
+            messageText.text = message.data.toString()
 
             // Format the stored timestamp into a readable String using method.
             // Utils specific to SendBird, fix later
@@ -108,8 +108,8 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
         }
         // UserMessage is specific to SendBird, fix later
 
-        internal fun bind(message: DummyMessage) {
-            messageText.text = message.message
+        internal fun bind(message: Message) {
+            messageText.text = message.data.toString()
 
             // Format the stored timestamp into a readable String using method.
             // TODO: Replace HOUR_IN_MILLIS and FORMAT_SHOW_TIME to get metadata from Hype Messages
