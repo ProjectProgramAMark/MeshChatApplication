@@ -35,6 +35,12 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
          */
         // SendBird function
         // message.getSender().getUserId().equals(SendBird.getCurrentUser().getUserId())
+
+        // TODO: Create logic for this
+//        val hypeFramework = mContext.applicationContext as HypeLifeCycle
+//        if(message.identifier.equals()) {
+//
+//        }
         return if (true) {
             // If the current user is the sender of the message
             VIEW_TYPE_MESSAGE_SENT

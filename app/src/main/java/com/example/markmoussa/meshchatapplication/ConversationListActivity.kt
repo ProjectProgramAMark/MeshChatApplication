@@ -42,7 +42,7 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate {
         mConversationListRecycler = findViewById<RecyclerView>(R.id.reyclerview_conversation_list)
         mConversationListRecycler!!.layoutManager = LinearLayoutManager(this)
         val hypeFramework = applicationContext as HypeLifeCycle
-        mConversationListAdapter = ConversationListAdapter(this, hypeFramework.getAllStores().keys.toList())
+        mConversationListAdapter = ConversationListAdapter(this, hypeFramework.getAllMessages().keys.toList())
         mConversationListRecycler.adapter = mConversationListAdapter
 
         // The onItemClick and onItemLongClick needs to be put here and not in the adapter since it's custom-defined and directly
@@ -53,7 +53,7 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate {
                 Log.i("TEST: ", "This is a test, item number " + position.toString() + " picked.")
                 val contactName = userNameTextView.text
                 val hypeFramework = applicationContext as HypeLifeCycle
-                val contactStore = hypeFramework.getAllStores()[contactName]
+                val contactStore = hypeFramework.getAllMessages()[contactName]
                 contactStore?.delegate = this@ConversationListActivity
                 val intent = Intent(this@ConversationListActivity, MessageListActivity::class.java)
                 intent.putExtra("StoreIdentifier", contactStore?.instance?.stringIdentifier)
