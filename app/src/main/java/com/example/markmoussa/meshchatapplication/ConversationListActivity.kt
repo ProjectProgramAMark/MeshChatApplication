@@ -14,6 +14,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import com.hypelabs.hype.Hype
 import com.hypelabs.hype.Message
 import kotlinx.android.synthetic.main.item_conversation.*
 
@@ -21,28 +22,35 @@ import kotlinx.android.synthetic.main.item_conversation.*
 class ConversationListActivity : AppCompatActivity(), Store.Delegate {
 
     // writing dummy data here for conversations. remove when figured out how to import conversations
-    val user1: User = User("Mark", null)
-    val user2: User = User("Marilyn", null)
-    val user3: User = User("Marvin", null)
-    val user4: User = User("Maged", null)
+//    val user1: User = User("Mark", null)
+//    val user2: User = User("Marilyn", null)
+//    val user3: User = User("Marvin", null)
+//    val user4: User = User("Maged", null)
+//
+//    val convo1: Conversation = Conversation(user1, null)
+//    val convo2: Conversation = Conversation(user2, null)
+//    val convo3: Conversation = Conversation(user3, null)
+//    val convo4: Conversation = Conversation(user4, null)
 
-    val convo1: Conversation = Conversation(user1, null)
-    val convo2: Conversation = Conversation(user2, null)
-    val convo3: Conversation = Conversation(user3, null)
-    val convo4: Conversation = Conversation(user4, null)
-
-    // TODO: Replace with imported conversations when figured out how to do such
-//    private var mConversationListList: List<Conversation> = listOf(convo1, convo2, convo3, convo4)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_conversation_list)
+
+        // creating conversations list
+        var conversationList = mutableListOf<Conversation>()
+        val hypeFramework = applicationContext as HypeLifeCycle
+        for(x in hypeFramework.getAllMessages()) {
+            // TODO: Implement User nickname when I enable setUserIdentifier on Hype SDK
+            conversationList.add(Conversation(User(null, null, x.key), null, x.value))
+        }
+
+
         var mConversationListRecycler: RecyclerView? = null
         var mConversationListAdapter: ConversationListAdapter? = null
         mConversationListRecycler = findViewById<RecyclerView>(R.id.reyclerview_conversation_list)
         mConversationListRecycler!!.layoutManager = LinearLayoutManager(this)
-        val hypeFramework = applicationContext as HypeLifeCycle
-        mConversationListAdapter = ConversationListAdapter(this, hypeFramework.getAllMessages().keys.toList())
+        mConversationListAdapter = ConversationListAdapter(this, conversationList)
         mConversationListRecycler.adapter = mConversationListAdapter
 
         // The onItemClick and onItemLongClick needs to be put here and not in the adapter since it's custom-defined and directly
@@ -52,7 +60,6 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate {
                 // when item (conversation) is clicked, go to that conversation's message list
                 Log.i("TEST: ", "This is a test, item number " + position.toString() + " picked.")
                 val contactName = userNameTextView.text
-                val hypeFramework = applicationContext as HypeLifeCycle
                 val contactStore = hypeFramework.getAllMessages()[contactName]
                 contactStore?.delegate = this@ConversationListActivity
                 val intent = Intent(this@ConversationListActivity, MessageListActivity::class.java)

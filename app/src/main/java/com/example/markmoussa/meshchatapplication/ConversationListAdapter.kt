@@ -1,21 +1,21 @@
 package com.example.markmoussa.meshchatapplication
 
 import android.content.Context
+import android.media.Image
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import com.hypelabs.hype.Hype
 import java.util.*
 
 /**
  * Created by markmoussa on 2/24/18.
  */
 
-//TODO : Once I figure out how to get timestamps, I'll be able to pass in Conversations into the Adapter instead of string
-// TODO: for now, just have mConversationList as List<String>. When I figure that out, replace with List<Conversation>
-class ConversationListAdapter(private val mContext: Context, private val mConversationList: List<String>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class ConversationListAdapter(private val mContext: Context, private val mConversationList: List<Conversation>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun getItemCount(): Int {
         return mConversationList.size
     }
@@ -42,6 +42,7 @@ class ConversationListAdapter(private val mContext: Context, private val mConver
         internal var messagePreviewText: TextView
         internal var timestampText: TextView
         internal var profilePicImage: ImageView
+        internal var onlineStatusIcon: ImageView
 
         init {
 
@@ -49,19 +50,35 @@ class ConversationListAdapter(private val mContext: Context, private val mConver
             messagePreviewText = itemView.findViewById(R.id.messagePreviewTextView)
             timestampText = itemView.findViewById(R.id.timestampTextView)
             profilePicImage = itemView.findViewById<ImageView>(R.id.profilePicImageView) as ImageView
+            onlineStatusIcon = itemView.findViewById<ImageView>(R.id.onlineStatusIcon) as ImageView
         }
-        // TODO: change this back to type Conversation once TODO at top of class if finished
-        internal fun bind(conversation: String) {
-             usernameText.text = conversation
+        internal fun bind(conversation: Conversation) {
+             if(conversation.user != null) {
+                 usernameText.text = conversation.user.nickname
+             } else {
+                 // Not sure why I have to add a non-null call for this but not for the one in the if statement? Check on that later
+                 usernameText.text = conversation.user!!.instanceId
+             }
             // Replace with this once conversation goes back to string
             // usernameText.text = conversation.user?.nickname
-            // TODO: Figure out how to search for user in HypeLabs Messages to display their conversation thread
-            messagePreviewText.text = "Dummy text here"
+            if(conversation.messageList != null) {
+                messagePreviewText.text = conversation.messageList.getMessageStringAtIndex(conversation.messageList.lastReadIndex)
+            } else {
+                messagePreviewText.text = ""
+            }
             // TODO: Find out how to get timestamp of last message from HypeLabs Messages
             //timeText.text = DateUtils.formatDateTime(message.getCreatedAt(), HOUR_IN_MILLIS, FORMAT_SHOW_TIME)
             timestampText.text = Date().toString()
             // TODO: Figure out how to pull profile pic, or if not, then what profile pic should be (if there should be one at all)
-            // profilePicImage
+            if(conversation.user.profileUrl != null) {
+                // do nothing
+            }
+            val hypeFramework = mContext.applicationContext as HypeLifeCycle
+            if(conversation.user.instanceId in hypeFramework.getAllOnlinePeers()) {
+                onlineStatusIcon.setImageResource(android.R.drawable.presence_online)
+            } else {
+                onlineStatusIcon.setImageResource(android.R.drawable.presence_offline)
+            }
         }
     }
 

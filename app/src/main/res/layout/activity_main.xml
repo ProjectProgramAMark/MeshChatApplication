@@ -8,34 +8,24 @@
 
     <TextView
         android:id="@+id/textView"
-        android:layout_width="157dp"
-        android:layout_height="0dp"
+        android:layout_width="232dp"
+        android:layout_height="78dp"
         android:layout_marginBottom="59dp"
         android:layout_marginTop="156dp"
-        android:text="Welcome to MeshChat! Sign up or sign in"
-        app:layout_constraintBottom_toTopOf="@+id/signUpButton"
+        android:text="Welcome to MeshChat! Please click continue in order to choose your username"
+        app:layout_constraintBottom_toTopOf="@+id/continueButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/signUpButton"
+        android:id="@+id/continueButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="34dp"
-        android:layout_marginStart="34dp"
+        android:layout_marginBottom="184dp"
+        android:layout_marginStart="68dp"
         android:text="Sign Up"
-        app:layout_constraintBottom_toTopOf="@+id/signInButton"
-        app:layout_constraintStart_toStartOf="@+id/textView"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
-
-    <Button
-        android:id="@+id/signInButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="196dp"
-        android:text="Sign In"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/signUpButton"
-        app:layout_constraintTop_toBottomOf="@+id/signUpButton" />
+        app:layout_constraintStart_toStartOf="@+id/textView" />
+
 </android.support.constraint.ConstraintLayout>

@@ -27,7 +27,7 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
         var mMessageAdapter: MessageListAdapter? = null
         mMessageRecycler = findViewById<RecyclerView>(R.id.recyclerview_message_list) as RecyclerView
         mMessageAdapter = MessageListAdapter(this, mMessageList)
-        mMessageRecycler!!.layoutManager = LinearLayoutManager(this)
+        mMessageRecycler.layoutManager = LinearLayoutManager(this)
         mMessageRecycler.adapter = mMessageAdapter
     }
 
@@ -101,7 +101,6 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
 
         val hypeFramework = application as HypeLifeCycle
         val storeIdentifier = intent.getStringExtra("StoreIdentifier")
-
-        return hypeFramework.getAllStores()[storeIdentifier]!!
+        return hypeFramework.getAllMessages()[storeIdentifier]!!
     }
 }

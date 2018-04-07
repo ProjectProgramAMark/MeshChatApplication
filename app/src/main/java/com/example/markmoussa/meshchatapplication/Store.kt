@@ -32,13 +32,13 @@ class Store(val instance: Instance) {
         this.lastReadIndex = 0
     }
 
-    // need the context in order to be able to access setStores function which lives in HypeLifeCycle
+    // need the context in order to be able to access setAllOnlinePeers function which lives in HypeLifeCycle
     // because Stores is a singleton class
     fun add(message: Message, context: Context) {
 
         getMessages()!!.add(message)
         val hypeFramework = context.applicationContext as HypeLifeCycle
-         hypeFramework.setStores(instance.stringIdentifier, this)
+         hypeFramework.setMessageDatabase(instance.stringIdentifier, this)
         val delegate = delegate
 
         delegate?.onMessageAdded(this, message)
@@ -56,6 +56,14 @@ class Store(val instance: Instance) {
     fun hasNewMessages(): Boolean {
 
         return lastReadIndex < getMessages()!!.size
+    }
+
+    fun getMessageStringAtIndex(index: Int): String {
+        return messages!![index].toString()
+    }
+
+    fun getMessageAtIndex(index: Int): Message {
+        return messages!![index]
     }
 
     // TODO: write a function to update the stores value's last read index (here and in HypeLifeCycle)

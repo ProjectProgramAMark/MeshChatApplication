@@ -1,5 +1,7 @@
 package com.example.markmoussa.meshchatapplication
 
+import com.hypelabs.hype.Instance
+
 // THIS FILE WAS TAKEN DIRECTLY FROM THE HYPELABS ANDROID DEMO.
 // ALL CREDIT FOR THIS FILE GOES DIRECTLY TO HYPELABS
 // link: https://github.com/Hype-Labs/HypeChatDemo.android
@@ -11,4 +13,4 @@ package com.example.markmoussa.meshchatapplication
 //}
 
 // This version with a constructor used simply so we can generate dummy data to populate conversations
-class User(val nickname: String?, val profileUrl: String?)
+class User(val nickname: String?, val profileUrl: String?, val instanceId: String?)

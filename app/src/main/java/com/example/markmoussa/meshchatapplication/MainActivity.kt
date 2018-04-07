@@ -28,14 +28,8 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(this@MainActivity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
         }
 
-        val signInButton = findViewById<Button>(R.id.signInButton) as Button
-        signInButton.setOnClickListener {
-            val intent = Intent(this, SignInActivity::class.java)
-            startActivity(intent)
-        }
-
-        val signUpButton = findViewById<Button>(R.id.signUpButton) as Button
-        signUpButton.setOnClickListener {
+        val continueButton = findViewById<Button>(R.id.continueButton) as Button
+        continueButton.setOnClickListener {
             val intent = Intent(this, SignUpActivity::class.java)
             startActivity(intent)
         }

@@ -81,7 +81,7 @@ class NewMessageActivity : AppCompatActivity(), Store.Delegate {
         // this is hacky and probably won't work so if getting an error, this is where it is most likely
         // val storeIdentifier = intent.getStringExtra("StoreIdentifier")
         val storeIdentifier = contactEditText.text.toString()
-        if(hypeFramework.getAllStores()[storeIdentifier] == null) {
+        if(hypeFramework.getAllMessages()[storeIdentifier] == null) {
             Log.e("No user found, NewMessageActivity", "Couldn't find user $storeIdentifier")
 
             /* TODO: CRITICAL - It looks like I can't import contacts since I have to find the people on the network first
@@ -89,8 +89,7 @@ class NewMessageActivity : AppCompatActivity(), Store.Delegate {
              * to figure out how to make the identifiers persist
              */
 
-
         }
-        return hypeFramework.getAllStores()[storeIdentifier]!!
+        return hypeFramework.getAllMessages()[storeIdentifier]!!
     }
 }

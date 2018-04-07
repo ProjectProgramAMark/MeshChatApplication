@@ -21,10 +21,10 @@ import kotlin.properties.Delegates
 
 class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, MessageObserver, HypeKeepForeground.LifecycleDelegate {
 
-    // TODO: Consider moving stores to a different class (must be a class within the same lifetime of the app, a.k.a. an activity
-    // The stores object keeps track of message storage associated with each instance (peer)
-    private var stores: MutableList<String> by Delegates.observable(mutableListOf()) {
-        _, _, _ -> updateStoreFile()
+    // TODO: Consider moving onlinePeers to a different class (must be a class within the same lifetime of the app, a.k.a. an activity
+    // The onlinePeers object keeps track of message storage associated with each instance (peer)
+    private var onlinePeers: MutableList<String> by Delegates.observable(mutableListOf()) {
+        _, _, _ -> updateOnlinePeersFile()
     }
 
     private var messageDatabase: HashMap<String, Store> by Delegates.observable(HashMap()) {
@@ -66,7 +66,7 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
     override fun onHypeStart() {
         Log.i(TAG, "Hype started!")
         Log.i(TAG, "Loading store from file")
-        readStoreFile()
+        readOnlinePeers()
         readMessageDatabase()
     }
 
@@ -178,23 +178,23 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
         // have to assign file directory here because context of app is needed for it and that is
         // not available until onCreate() is called
         dirPath = this.filesDir
-        // setting stores to read file here instead of at the top because readStoreFile() needs
-        // dirPath in order to proceed, and dirPath is still null when stores is instantiated
-        stores = readStoreFile()
+        // setting onlinePeers to read file here instead of at the top because readOnlinePeers() needs
+        // dirPath in order to proceed, and dirPath is still null when onlinePeers is instantiated
+        onlinePeers = readOnlinePeers()
         messageDatabase = readMessageDatabase()
     }
 
-//    fun getAllStores(): HashMap<String, Store> {
-//        return stores
-//    }
+    fun getAllOnlinePeers(): MutableList<String> {
+        return onlinePeers
+    }
 
     fun getAllMessages(): HashMap<String, Store> {
         return messageDatabase
     }
 
     // adds message to store and triggers updating store file in memory
-    fun setStores(storeIdentifier: String, store: Store) {
-        stores[storeIdentifier] = store
+    private fun setAllOnlinePeers(storeIdentifier: String) {
+        onlinePeers.add(storeIdentifier)
     }
 
     // adds message to store and triggers updating store file in memory
@@ -202,7 +202,7 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
         messageDatabase[storeIdentifier] = store
     }
 
-    private fun readStoreFile(): MutableList<String> {
+    private fun readOnlinePeers(): MutableList<String> {
         val storeFile = File(dirPath, "storeFile")
         if(!(storeFile.exists())) {
             storeFile.createNewFile()
@@ -219,7 +219,7 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
         return mutableListOf()
     }
 
-    fun updateStoreFile() {
+    fun updateOnlinePeersFile() {
         try {
             val storeFile = File(dirPath, "storeFile")
             if(!(storeFile.exists())) {
@@ -227,7 +227,7 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
             }
             val fos = FileOutputStream(storeFile)
             val oos = ObjectOutputStream(fos)
-            oos.writeObject(getAllStores())
+            oos.writeObject(getAllOnlinePeers())
             oos.close()
         } catch(e: Exception) {
             e.printStackTrace()
@@ -252,7 +252,7 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
     }
 
     // updates the message database file whenever a new message is sent
-    fun updateMessageDatabase() {
+    private fun updateMessageDatabase() {
         try {
             val messageDatabaseFile = File(dirPath, "messageDatabase")
             if(!(messageDatabaseFile.exists())) {
@@ -260,22 +260,22 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
             }
             val fos = FileOutputStream(messageDatabaseFile)
             val oos = ObjectOutputStream(fos)
-            oos.writeObject(getAllStores())
+            oos.writeObject(getAllMessages())
             oos.close()
         } catch(e: Exception) {
             e.printStackTrace()
         }
     }
 
-    fun addToResolvedInstancesMap(instance: Instance) {
+    private fun addToResolvedInstancesMap(instance: Instance) {
         // Instances should be strongly kept by some data structure. Their identifiers
         // are useful for keeping track of which instances are ready to communicate.
-        getAllStores()[instance.stringIdentifier] = Store(instance)
-        setStores(instance.stringIdentifier, Store(instance))
+        getAllOnlinePeers().add(instance.stringIdentifier)
+        setAllOnlinePeers(instance.stringIdentifier)
 
-        /* TODO: Make another class to store conversations. Store just stores instances online right now
+        /* TODO: Make another class to store conversations. Store just onlinePeers instances online right now
          * OR consider just showing both everyone who's online at the moment and everyone you've had
-         * a conversation with (since they'll both be saved to stores) and have a green dot next to
+         * a conversation with (since they'll both be saved to onlinePeers) and have a green dot next to
          * anyone you can actually communicate with at the moment
          */
 
@@ -292,7 +292,7 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
     fun removeFromResolvedInstancesMap(instance: Instance) {
         // Cleaning up is always a good idea. It's not possible to communicate with instances
         // that were previously lost.
-        getAllStores()!!.remove(instance.stringIdentifier)
+        getAllOnlinePeers().remove(instance.stringIdentifier)
 
 
         // TODO: Add a contact activity to update contacts

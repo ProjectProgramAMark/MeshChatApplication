@@ -41,4 +41,12 @@
         android:text="TextView"
         app:layout_constraintStart_toEndOf="@+id/userNameTextView"
         tools:layout_editor_absoluteY="16dp" />
+
+    <ImageView
+        android:id="@+id/onlineStatusIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@android:drawable/presence_online"
+        tools:layout_editor_absoluteX="379dp"
+        tools:layout_editor_absoluteY="44dp" />
 </android.support.constraint.ConstraintLayout>
