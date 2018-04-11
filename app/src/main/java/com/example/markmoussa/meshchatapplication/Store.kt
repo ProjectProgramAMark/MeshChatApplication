@@ -38,7 +38,7 @@ class Store(val instance: Instance) {
 
         getMessages()!!.add(message)
         val hypeFramework = context.applicationContext as HypeLifeCycle
-         hypeFramework.setMessageDatabase(instance.stringIdentifier, this)
+         hypeFramework.setMessageDatabase(instance.userIdentifier, this)
         val delegate = delegate
 
         delegate?.onMessageAdded(this, message)
@@ -58,8 +58,13 @@ class Store(val instance: Instance) {
         return lastReadIndex < getMessages()!!.size
     }
 
-    fun getMessageStringAtIndex(index: Int): String {
+    fun getMessageStringAtIndex(index: Int): String? {
+        if(messages == null || messages!!.size >= index) {
+            // this means there's no message at this index and therefore need to return null
+            return null
+        }
         return messages!![index].toString()
+
     }
 
     fun getMessageAtIndex(index: Int): Message {

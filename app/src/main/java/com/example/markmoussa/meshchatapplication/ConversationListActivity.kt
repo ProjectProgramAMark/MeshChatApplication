@@ -7,6 +7,7 @@ package com.example.markmoussa.meshchatapplication
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -14,37 +15,17 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import com.hypelabs.hype.Hype
 import com.hypelabs.hype.Message
-import kotlinx.android.synthetic.main.item_conversation.*
 
 
 class ConversationListActivity : AppCompatActivity(), Store.Delegate {
-
-    // writing dummy data here for conversations. remove when figured out how to import conversations
-//    val user1: User = User("Mark", null)
-//    val user2: User = User("Marilyn", null)
-//    val user3: User = User("Marvin", null)
-//    val user4: User = User("Maged", null)
-//
-//    val convo1: Conversation = Conversation(user1, null)
-//    val convo2: Conversation = Conversation(user2, null)
-//    val convo3: Conversation = Conversation(user3, null)
-//    val convo4: Conversation = Conversation(user4, null)
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_conversation_list)
 
-        // creating conversations list
-        var conversationList = mutableListOf<Conversation>()
-        val hypeFramework = applicationContext as HypeLifeCycle
-        for(x in hypeFramework.getAllMessages()) {
-            // TODO: Implement User nickname when I enable setUserIdentifier on Hype SDK
-            conversationList.add(Conversation(User(null, null, x.key), null, x.value))
-        }
-
+        var conversationList = populateConversationList()
 
         var mConversationListRecycler: RecyclerView? = null
         var mConversationListAdapter: ConversationListAdapter? = null
@@ -59,11 +40,17 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate {
             override fun onItemClicked(recyclerView: RecyclerView, position: Int, v: View) {
                 // when item (conversation) is clicked, go to that conversation's message list
                 Log.i("TEST: ", "This is a test, item number " + position.toString() + " picked.")
-                val contactName = userNameTextView.text
-                val contactStore = hypeFramework.getAllMessages()[contactName]
+                val userIdentifier = conversationList[position].user?.userIdentifier
+                val hypeFramework = applicationContext as HypeLifeCycle
+                val contactStore = hypeFramework.getAllMessages()[userIdentifier]
                 contactStore?.delegate = this@ConversationListActivity
                 val intent = Intent(this@ConversationListActivity, MessageListActivity::class.java)
-                intent.putExtra("StoreIdentifier", contactStore?.instance?.stringIdentifier)
+                intent.putExtra("userIdentifier", userIdentifier)
+                if(userIdentifier in hypeFramework.getAllOnlinePeers()) {
+                    intent.putExtra("online", true)
+                } else {
+                    intent.putExtra("online", false)
+                }
                 startActivity(intent)
             }
         })
@@ -89,6 +76,15 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate {
                 return true
             }
         })
+
+        // setting refresh listener in order to refresh list of online peers
+        // TODO: Figure out how to have this list refresh immediately when a new user comes online.
+        // TODO: for this, think the delegate method that Store implements
+        val mSwipeRefreshLayout = findViewById<SwipeRefreshLayout>(R.id.swiperefresh)
+        mSwipeRefreshLayout.setOnRefreshListener {
+            notifyOnlinePeersChanged()
+            mSwipeRefreshLayout.isRefreshing = false
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -107,9 +103,36 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate {
         }
     }
 
+
+    private fun populateConversationList(): MutableList<Conversation> {
+        // creating conversations list
+        val conversationList = mutableListOf<Conversation>()
+        val hypeFramework = applicationContext as HypeLifeCycle
+        var currentlyOnline: Boolean
+        for(x in hypeFramework.getAllMessages()) {
+            // TODO: Implement User nickname when I enable setUserIdentifier on Hype SDK
+            currentlyOnline = x.key in hypeFramework.getAllOnlinePeers()
+            val nickname: String?
+            if(x.key in hypeFramework.getAllContacts()) {
+                // I get the actual user here. Consider just passing that into the conversation instead of
+                // creating a brand new one
+                nickname = hypeFramework.getAllContacts()[x.key]!!.nickname
+            } else {
+                nickname = null
+            }
+            conversationList.add(Conversation(User(nickname, null, x.key), null, x.value, currentlyOnline))
+        }
+        return conversationList
+    }
+
     override fun onMessageAdded(store: Store, message: Message) {
         updateInterface()
 
+    }
+
+    fun notifyOnlinePeersChanged() {
+        populateConversationList()
+        updateInterface()
     }
 
     private fun updateInterface() {

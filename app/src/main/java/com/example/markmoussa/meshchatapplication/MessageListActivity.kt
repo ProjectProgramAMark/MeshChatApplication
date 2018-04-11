@@ -17,6 +17,9 @@ import java.io.UnsupportedEncodingException
 
 class MessageListActivity : AppCompatActivity(), Store.Delegate {
 
+    private val hypeFramework = application as HypeLifeCycle
+    private val userIdentifier = intent.getLongExtra("userIdentifier", 0)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_message_list)
@@ -29,20 +32,32 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
         mMessageAdapter = MessageListAdapter(this, mMessageList)
         mMessageRecycler.layoutManager = LinearLayoutManager(this)
         mMessageRecycler.adapter = mMessageAdapter
+
+        // Setting actionbar with name of user
+        if(userIdentifier != 0.toLong()) {
+            if(userIdentifier in hypeFramework.getAllContacts()) {
+                val actionBar = actionBar
+                actionBar.title = hypeFramework.getAllContacts()[userIdentifier]?.nickname
+            }
+        }
     }
 
     override fun onStart() {
         super.onStart()
         // checking to see which user chat they want, or if it's a new message
         // TODO: made a new separate class for new messages for now, condense that into this class when I have everything set up
-        val user: String? = intent.getStringExtra("user")
-        if(user != null) {
+        if(userIdentifier in hypeFramework.getAllMessages()) {
             val store = getStore()
             store.delegate = this
             store.lastReadIndex = store.getMessages()!!.size
 
             val chatBox = findViewById<EditText>(R.id.edittext_chatbox) as EditText
             val sendButton = findViewById<Button>(R.id.button_chatbox_send) as Button
+
+            if(!(intent.getBooleanExtra("online", true))) {
+                chatBox.isEnabled = false
+                sendButton.isEnabled = false
+            }
 
             // Sending message
             sendButton.setOnClickListener {
@@ -92,15 +107,12 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
     override fun onBackPressed() {
         super.onBackPressed()
         if(getStore() != null) {
-            getStore()!!.lastReadIndex = getStore()!!.getMessages()!!.size
+            getStore().lastReadIndex = getStore().getMessages()!!.size
         }
     }
 
     // getting Store of this chat (which is where messages are stored)
     private fun getStore(): Store {
-
-        val hypeFramework = application as HypeLifeCycle
-        val storeIdentifier = intent.getStringExtra("StoreIdentifier")
-        return hypeFramework.getAllMessages()[storeIdentifier]!!
+        return hypeFramework.getAllMessages()[userIdentifier]!!
     }
 }

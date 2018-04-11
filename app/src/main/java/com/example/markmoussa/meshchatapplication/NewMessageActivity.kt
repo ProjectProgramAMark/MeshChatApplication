@@ -75,21 +75,28 @@ class NewMessageActivity : AppCompatActivity(), Store.Delegate {
 
     // getting Store of this chat (which is where messages are stored)
     private fun getStore(): Store {
+        // TODO: Add method of selecting contact and tie this contact to its userIdentifier
 
-        val hypeFramework = applicationContext as HypeLifeCycle
-        // have to manually search for the store based on the number user put in
-        // this is hacky and probably won't work so if getting an error, this is where it is most likely
-        // val storeIdentifier = intent.getStringExtra("StoreIdentifier")
-        val storeIdentifier = contactEditText.text.toString()
-        if(hypeFramework.getAllMessages()[storeIdentifier] == null) {
-            Log.e("No user found, NewMessageActivity", "Couldn't find user $storeIdentifier")
+//        val hypeFramework = applicationContext as HypeLifeCycle
+//        // have to manually search for the store based on the number user put in
+//        // this is hacky and probably won't work so if getting an error, this is where it is most likely
+//        // val storeIdentifier = intent.getStringExtra("StoreIdentifier")
+//        val userIdentifier = contactEditText.text.toString()
+//        if(hypeFramework.getAllMessages()[userIdentifier] == null) {
+//            Log.e("No user found, NewMessageActivity", "Couldn't find user $storeIdentifier")
+//
+//            /* TODO: CRITICAL - It looks like I can't import contacts since I have to find the people on the network first
+//             * so I should make a contacts list, and consult this link: https://hypelabs.io/community/topic/43/
+//             * to figure out how to make the identifiers persist
+//             */
+//
+//        }
+//        return hypeFramework.getAllMessages()[storeIdentifier]!!
 
-            /* TODO: CRITICAL - It looks like I can't import contacts since I have to find the people on the network first
-             * so I should make a contacts list, and consult this link: https://hypelabs.io/community/topic/43/
-             * to figure out how to make the identifiers persist
-             */
 
-        }
-        return hypeFramework.getAllMessages()[storeIdentifier]!!
+
+        // THIS IS JUST A PLACEHOLDER TO GET THE ERRORS TO SHUT UP. FIX THIS WHEN YOU FIX THE FUNCTION
+        return Store(Hype.getHostInstance())
     }
+
 }

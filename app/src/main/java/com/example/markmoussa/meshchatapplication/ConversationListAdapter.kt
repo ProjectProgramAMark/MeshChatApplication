@@ -1,14 +1,12 @@
 package com.example.markmoussa.meshchatapplication
 
 import android.content.Context
-import android.media.Image
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import com.hypelabs.hype.Hype
 import java.util.*
 
 /**
@@ -53,14 +51,11 @@ class ConversationListAdapter(private val mContext: Context, private val mConver
             onlineStatusIcon = itemView.findViewById<ImageView>(R.id.onlineStatusIcon) as ImageView
         }
         internal fun bind(conversation: Conversation) {
-             if(conversation.user != null) {
+             if(conversation.user!!.nickname != null) {
                  usernameText.text = conversation.user.nickname
              } else {
-                 // Not sure why I have to add a non-null call for this but not for the one in the if statement? Check on that later
-                 usernameText.text = conversation.user!!.instanceId
+                 usernameText.text = conversation.user.userIdentifier.toString()
              }
-            // Replace with this once conversation goes back to string
-            // usernameText.text = conversation.user?.nickname
             if(conversation.messageList != null) {
                 messagePreviewText.text = conversation.messageList.getMessageStringAtIndex(conversation.messageList.lastReadIndex)
             } else {
@@ -74,7 +69,7 @@ class ConversationListAdapter(private val mContext: Context, private val mConver
                 // do nothing
             }
             val hypeFramework = mContext.applicationContext as HypeLifeCycle
-            if(conversation.user.instanceId in hypeFramework.getAllOnlinePeers()) {
+            if(conversation.user.userIdentifier in hypeFramework.getAllOnlinePeers()) {
                 onlineStatusIcon.setImageResource(android.R.drawable.presence_online)
             } else {
                 onlineStatusIcon.setImageResource(android.R.drawable.presence_offline)

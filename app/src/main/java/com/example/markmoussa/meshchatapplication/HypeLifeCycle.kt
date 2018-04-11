@@ -5,6 +5,11 @@ package com.example.markmoussa.meshchatapplication
 // link: https://github.com/Hype-Labs/HypeChatDemo.android
 
 import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.util.Log
 import com.hypelabs.hype.Error
 import com.hypelabs.hype.Hype
@@ -21,14 +26,17 @@ import kotlin.properties.Delegates
 
 class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, MessageObserver, HypeKeepForeground.LifecycleDelegate {
 
-    // TODO: Consider moving onlinePeers to a different class (must be a class within the same lifetime of the app, a.k.a. an activity
     // The onlinePeers object keeps track of message storage associated with each instance (peer)
-    private var onlinePeers: MutableList<String> by Delegates.observable(mutableListOf()) {
+    var onlinePeers: MutableList<Long> by Delegates.observable(readOnlinePeers()) {
         _, _, _ -> updateOnlinePeersFile()
     }
 
-    private var messageDatabase: HashMap<String, Store> by Delegates.observable(HashMap()) {
+    private var messageDatabase: HashMap<Long, Store> by Delegates.observable(readMessageDatabase()) {
         _, _, _ -> updateMessageDatabase()
+    }
+
+    private var contactsDatabase: HashMap<Long, User> by Delegates.observable(readContactsDatabase()) {
+        _, _, _ -> updateContactsDatabase()
     }
 
     private lateinit var dirPath: File
@@ -53,7 +61,9 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
         // Generate an app identifier in the HypeLabs dashboard (https://hypelabs.io/apps/),
         // by creating a new app. Copy the given identifier here.
         Hype.setAppIdentifier("f370ac17")
-
+        val sharedPreferences: SharedPreferences = applicationContext.getSharedPreferences("sp", Context.MODE_PRIVATE)
+        val userIdentifier = sharedPreferences.getInt("USER_IDENTIFIER", Hype.DefaultUserIdentifier)
+        Hype.setUserIdentifier(userIdentifier)
         Hype.start()
     }
 
@@ -135,19 +145,18 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
 
         Log.i(TAG, String.format("Hype got a message from: %s", instance.stringIdentifier))
 
-        val store = getAllMessages()[instance.stringIdentifier]
-
-        // Storing the message triggers a reload update in the ChatActivity
+        val store = getAllMessages()[instance.userIdentifier]
+        if(store != null) {
+            setMessageDatabase(instance.userIdentifier, store)
+        } else {
+            setMessageDatabase(instance.userIdentifier, Store(instance))
+        }
+        // Storing the message triggers a reload update in the MessageList activity
         store!!.add(message, this)
 
-        // TODO: Add a contact activity to update contacts
-        /*
-        // Update the UI for the ContactActivity as well
-        val contactActivity = ContactActivity.getDefaultInstance()
-
-        if (contactActivity != null) {
-            contactActivity!!.notifyAddedMessage()
-        }*/
+        // Notify the conversationList activity to refresh the UI
+        val conversationListActivity = ConversationListActivity()
+        conversationListActivity.notifyOnlinePeersChanged()
     }
 
     override fun onHypeMessageFailedSending(messageInfo: MessageInfo, instance: Instance, error: Error) {
@@ -184,37 +193,48 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
         messageDatabase = readMessageDatabase()
     }
 
-    fun getAllOnlinePeers(): MutableList<String> {
+    fun getAllOnlinePeers(): MutableList<Long> {
         return onlinePeers
     }
 
-    fun getAllMessages(): HashMap<String, Store> {
+    fun getAllMessages(): HashMap<Long, Store> {
         return messageDatabase
     }
 
-    // adds message to store and triggers updating store file in memory
-    private fun setAllOnlinePeers(storeIdentifier: String) {
-        onlinePeers.add(storeIdentifier)
+    fun getAllContacts(): HashMap<Long, User> {
+        return contactsDatabase
+    }
+
+    // adds online peer to onlinePeers and triggers updating online peers file in memory
+    private fun setAllOnlinePeers(userIdentifier: Long) {
+        onlinePeers.add(userIdentifier)
     }
 
     // adds message to store and triggers updating store file in memory
-    fun setMessageDatabase(storeIdentifier: String, store: Store) {
-        messageDatabase[storeIdentifier] = store
+    fun setMessageDatabase(userIdentifier: Long, store: Store) {
+        messageDatabase[userIdentifier] = store
     }
 
-    private fun readOnlinePeers(): MutableList<String> {
+    // adds contact to contactsDatabase and triggers updating the contacts file in memory
+    fun setContactsDatabase(userIdentifier: Long, user: User) {
+        contactsDatabase[userIdentifier] = user
+    }
+
+    private fun readOnlinePeers(): MutableList<Long> {
         val storeFile = File(dirPath, "storeFile")
         if(!(storeFile.exists())) {
             storeFile.createNewFile()
-        }
-        try {
-            val fis = FileInputStream(storeFile)
-            val ois = ObjectInputStream(fis)
-            val result = ois.readObject() as MutableList<String>
-            ois.close()
-            return result
-        } catch (e: Exception) {
-            e.printStackTrace()
+            return mutableListOf()
+        } else {
+            try {
+                val fis = FileInputStream(storeFile)
+                val ois = ObjectInputStream(fis)
+                val result = ois.readObject() as MutableList<Long>
+                ois.close()
+                return result
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
         return mutableListOf()
     }
@@ -234,19 +254,21 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
         }
     }
 
-    private fun readMessageDatabase(): HashMap<String, Store> {
+    private fun readMessageDatabase(): HashMap<Long, Store> {
         val messageDatabaseFile = File(dirPath, "messageDatabase")
         if(!(messageDatabaseFile.exists())) {
             messageDatabaseFile.createNewFile()
-        }
-        try {
-            val fis = FileInputStream(messageDatabaseFile)
-            val ois = ObjectInputStream(fis)
-            val result = ois.readObject() as HashMap<String, Store>
-            ois.close()
-            return result
-        } catch (e: Exception) {
-            e.printStackTrace()
+            return hashMapOf()
+        } else {
+            try {
+                val fis = FileInputStream(messageDatabaseFile)
+                val ois = ObjectInputStream(fis)
+                val result = ois.readObject() as HashMap<Long, Store>
+                ois.close()
+                return result
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
         return HashMap()
     }
@@ -267,42 +289,79 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
         }
     }
 
+    private fun readContactsDatabase(): HashMap<Long, User> {
+        val contactsFile = File(dirPath, "contactsFile")
+        if(!(contactsFile.exists())) {
+            contactsFile.createNewFile()
+            return hashMapOf()
+        } else {
+            try {
+                val fis = FileInputStream(contactsFile)
+                val ois = ObjectInputStream(fis)
+                val result = ois.readObject() as HashMap<Long, User>
+                ois.close()
+                return result
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+        return hashMapOf()
+    }
+
+    fun updateContactsDatabase() {
+        try {
+            val contactsFile = File(dirPath, "contactsFile")
+            if(!(contactsFile.exists())) {
+                contactsFile.createNewFile()
+            }
+            val fos = FileOutputStream(contactsFile)
+            val oos = ObjectOutputStream(fos)
+            oos.writeObject(getAllOnlinePeers())
+            oos.close()
+        } catch(e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     private fun addToResolvedInstancesMap(instance: Instance) {
         // Instances should be strongly kept by some data structure. Their identifiers
         // are useful for keeping track of which instances are ready to communicate.
-        getAllOnlinePeers().add(instance.stringIdentifier)
-        setAllOnlinePeers(instance.stringIdentifier)
+        getAllOnlinePeers().add(instance.userIdentifier)
+        setAllOnlinePeers(instance.userIdentifier)
+        if(getAllMessages()[instance.userIdentifier] == null) {
+            setMessageDatabase(instance.userIdentifier, Store(instance))
+        }
+        if(readContactsDatabase()[instance.userIdentifier] == null) {
+            val sharedPreferences: SharedPreferences = applicationContext.getSharedPreferences("sp", Context.MODE_PRIVATE)
+            var username = sharedPreferences.getString("USERNAME", null)
+            if(username == null) {
+               username = Hype.getHostInstance().toString()
+            }
+            var profilePicPath = sharedPreferences.getString("PROFILE_PIC_PATH", null)
+            var profilePic: Bitmap? = null
+            if(profilePicPath != null) {
+                profilePic = BitmapFactory.decodeFile(profilePicPath)
+            }
+            // sending the username of the contact if user doesn't have it saved already
+            Hype.setAnnouncement(User(username, profilePicPath, instance.userIdentifier, profilePic).toString().toByteArray())
 
-        /* TODO: Make another class to store conversations. Store just onlinePeers instances online right now
-         * OR consider just showing both everyone who's online at the moment and everyone you've had
-         * a conversation with (since they'll both be saved to onlinePeers) and have a green dot next to
-         * anyone you can actually communicate with at the moment
-         */
 
-        // TODO: Add a contact activity to update contacts
-        /*
-        // Notify the contact activity to refresh the UI
-        val contactActivity = ContactActivity.getDefaultInstance()
+        }
 
-        if (contactActivity != null) {
-            contactActivity!!.notifyContactsChanged()
-        }*/
+//        // Notify the conversationList activity to refresh the UI
+//        val conversationListActivity = ConversationListActivity()
+//        conversationListActivity.notifyOnlinePeersChanged()
     }
 
     fun removeFromResolvedInstancesMap(instance: Instance) {
         // Cleaning up is always a good idea. It's not possible to communicate with instances
         // that were previously lost.
-        getAllOnlinePeers().remove(instance.stringIdentifier)
+        getAllOnlinePeers().remove(instance.userIdentifier)
+        setAllOnlinePeers(instance.userIdentifier)
 
-
-        // TODO: Add a contact activity to update contacts
-        /*
-        // Notify the contact activity to refresh the UI
-        val contactActivity = ContactActivity.getDefaultInstance()
-
-        if (contactActivity != null) {
-            contactActivity!!.notifyContactsChanged()
-        } */
+        // Notify the conversationList activity to refresh the UI
+//        val conversationListActivity = ConversationListActivity()
+//        conversationListActivity.notifyOnlinePeersChanged()
     }
 
     companion object {

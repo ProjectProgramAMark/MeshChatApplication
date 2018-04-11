@@ -19,6 +19,7 @@ import android.widget.ImageView
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
+import java.nio.ByteBuffer
 
 
 class SignUpActivity : AppCompatActivity() {
@@ -37,6 +38,11 @@ class SignUpActivity : AppCompatActivity() {
             sharedPrefEditor.putString("USERNAME", usernameTextEdit.text.toString())
             sharedPrefEditor.apply()
 //            Hype.setUserIdentifier(usernameTextEdit.text.toString().toInt())
+            // getting userIdentifier for Hype by converting username to bytes and truncating at 8 bytes
+            val userIdentifierByteArray: ByteArray = usernameTextEdit.text.toString().toByteArray().copyOf(64)
+            val bb = ByteBuffer.wrap(userIdentifierByteArray)
+            val userIdentifier: Int = bb.int
+            sharedPrefEditor.putInt("USER_IDENTIFIER", userIdentifier)
             val intent = Intent(this, ConversationListActivity::class.java)
             startActivity(intent)
         }
@@ -71,7 +77,7 @@ class SignUpActivity : AppCompatActivity() {
 
     // saving profile pic; taken from Stack Overflow at:
     // https://stackoverflow.com/questions/34414608/set-profile-picture-and-save-in-internal-memory-folder-android-app
-    fun saveImage(bitmap: Bitmap) {
+    private fun saveImage(bitmap: Bitmap) {
         val output: OutputStream
 
         // Create a name for the saved image
@@ -91,7 +97,7 @@ class SignUpActivity : AppCompatActivity() {
 
     // Resizing profile pic; taken from Stack Overflow at:
     // https://stackoverflow.com/questions/11688982/pick-image-from-sd-card-resize-the-image-and-save-it-back-to-sd-card/11689101
-    fun getResizedBitmap(bm: Bitmap, newHeight: Int, newWidth: Int): Bitmap {
+    private fun getResizedBitmap(bm: Bitmap, newHeight: Int, newWidth: Int): Bitmap {
         val width = bm.width
         val height = bm.height
         val scaleWidth = newWidth.toFloat() / width
