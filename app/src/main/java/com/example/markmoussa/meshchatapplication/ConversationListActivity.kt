@@ -20,18 +20,19 @@ import com.hypelabs.hype.Message
 
 class ConversationListActivity : AppCompatActivity(), Store.Delegate {
 
+    lateinit var mConversationList: MutableList<Conversation>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_conversation_list)
 
-        var conversationList = populateConversationList()
+        mConversationList = populateConversationList()
 
         var mConversationListRecycler: RecyclerView? = null
         var mConversationListAdapter: ConversationListAdapter? = null
         mConversationListRecycler = findViewById<RecyclerView>(R.id.reyclerview_conversation_list)
         mConversationListRecycler!!.layoutManager = LinearLayoutManager(this)
-        mConversationListAdapter = ConversationListAdapter(this, conversationList)
+        mConversationListAdapter = ConversationListAdapter(this, mConversationList)
         mConversationListRecycler.adapter = mConversationListAdapter
 
         // The onItemClick and onItemLongClick needs to be put here and not in the adapter since it's custom-defined and directly
@@ -40,7 +41,7 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate {
             override fun onItemClicked(recyclerView: RecyclerView, position: Int, v: View) {
                 // when item (conversation) is clicked, go to that conversation's message list
                 Log.i("TEST: ", "This is a test, item number " + position.toString() + " picked.")
-                val userIdentifier = conversationList[position].user?.userIdentifier
+                val userIdentifier = mConversationList[position].user?.userIdentifier
                 val hypeFramework = applicationContext as HypeLifeCycle
                 val contactStore = hypeFramework.getAllMessages()[userIdentifier]
                 contactStore?.delegate = this@ConversationListActivity
@@ -65,8 +66,8 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate {
                 messageOptionsDialog.setItems(options) { dialog, which ->
                     // do ya thang
                     when(which) {
-                        0 -> Log.i("CONVERSATION LONG CLICK ITEM PICKED: ", "ARCHIVE")
-                        1 -> Log.i("CONVERSATION LONG CLICK ITEM PICKED: ", "DELETE")
+                        0 -> Log.i("CONVERSATIONLONGCLICK: ", "ARCHIVE")
+                        1 -> Log.i("CONVERSATIONLONGCLICK: ", "DELETE")
                     }
                 }
 
@@ -131,7 +132,7 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate {
     }
 
     fun notifyOnlinePeersChanged() {
-        populateConversationList()
+        mConversationList = populateConversationList()
         updateInterface()
     }
 

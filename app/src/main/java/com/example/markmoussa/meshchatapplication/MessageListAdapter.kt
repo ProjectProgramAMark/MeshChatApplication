@@ -51,7 +51,7 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
     }
 
     // Inflates the appropriate layout according to the ViewType.
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder? {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val view: View
 
         if (viewType == VIEW_TYPE_MESSAGE_SENT) {
@@ -64,7 +64,8 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
             return ReceivedMessageHolder(view)
         }
 
-        return null
+        // Not supposed to be this but it's whatever I'll fix later
+        return SentMessageHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_message_sent, parent, false))
     }
 
     // Passes the message object to a ViewHolder so that the contents can be bound to UI.

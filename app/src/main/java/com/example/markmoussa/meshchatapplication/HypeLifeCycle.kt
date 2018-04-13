@@ -27,15 +27,15 @@ import kotlin.properties.Delegates
 class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, MessageObserver, HypeKeepForeground.LifecycleDelegate {
 
     // The onlinePeers object keeps track of message storage associated with each instance (peer)
-    var onlinePeers: MutableList<Long> by Delegates.observable(readOnlinePeers()) {
+    var onlinePeers: MutableList<Long> by Delegates.observable(mutableListOf()) {
         _, _, _ -> updateOnlinePeersFile()
     }
 
-    private var messageDatabase: HashMap<Long, Store> by Delegates.observable(readMessageDatabase()) {
+    private var messageDatabase: HashMap<Long, Store> by Delegates.observable(hashMapOf()) {
         _, _, _ -> updateMessageDatabase()
     }
 
-    private var contactsDatabase: HashMap<Long, User> by Delegates.observable(readContactsDatabase()) {
+    private var contactsDatabase: HashMap<Long, User> by Delegates.observable(hashMapOf()) {
         _, _, _ -> updateContactsDatabase()
     }
 
@@ -155,8 +155,8 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
         store!!.add(message, this)
 
         // Notify the conversationList activity to refresh the UI
-        val conversationListActivity = ConversationListActivity()
-        conversationListActivity.notifyOnlinePeersChanged()
+//        val conversationListActivity = ConversationListActivity()
+//        conversationListActivity.notifyOnlinePeersChanged()
     }
 
     override fun onHypeMessageFailedSending(messageInfo: MessageInfo, instance: Instance, error: Error) {
@@ -167,11 +167,17 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
     override fun onHypeMessageSent(messageInfo: MessageInfo, instance: Instance, progress: Float, done: Boolean) {
 
         Log.i(TAG, String.format("Hype is sending a message: %f", progress))
+        while(!done) {
+            Log.i(TAG, "Testing. If infinite loop, then Hype message never sent.")
+        }
+        Log.i(TAG, "Hype message successfully sent!")
     }
 
     override fun onHypeMessageDelivered(messageInfo: MessageInfo, instance: Instance, progress: Float, done: Boolean) {
 
         Log.i(TAG, String.format("Hype delivered a message: %f", progress))
+        while(!done) {}
+        Log.i(TAG, "Hype message successfully delivered!")
     }
 
     override fun onHypeRequestAccessToken(i: Int): String {
@@ -187,6 +193,8 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
         // have to assign file directory here because context of app is needed for it and that is
         // not available until onCreate() is called
         dirPath = this.filesDir
+        Log.v("DIRECTORY: ", dirPath.absolutePath)
+
         // setting onlinePeers to read file here instead of at the top because readOnlinePeers() needs
         // dirPath in order to proceed, and dirPath is still null when onlinePeers is instantiated
         onlinePeers = readOnlinePeers()
@@ -222,7 +230,7 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
 
     private fun readOnlinePeers(): MutableList<Long> {
         val storeFile = File(dirPath, "storeFile")
-        if(!(storeFile.exists())) {
+        if(!(storeFile.exists()) || storeFile.length() == 0.toLong()) {
             storeFile.createNewFile()
             return mutableListOf()
         } else {
@@ -256,7 +264,7 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
 
     private fun readMessageDatabase(): HashMap<Long, Store> {
         val messageDatabaseFile = File(dirPath, "messageDatabase")
-        if(!(messageDatabaseFile.exists())) {
+        if(!(messageDatabaseFile.exists()) || messageDatabaseFile.length() == 0.toLong()) {
             messageDatabaseFile.createNewFile()
             return hashMapOf()
         } else {
@@ -291,7 +299,7 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
 
     private fun readContactsDatabase(): HashMap<Long, User> {
         val contactsFile = File(dirPath, "contactsFile")
-        if(!(contactsFile.exists())) {
+        if(!(contactsFile.exists()) || contactsFile.length() == 0.toLong()) {
             contactsFile.createNewFile()
             return hashMapOf()
         } else {

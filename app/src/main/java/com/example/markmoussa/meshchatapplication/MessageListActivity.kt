@@ -17,8 +17,6 @@ import java.io.UnsupportedEncodingException
 
 class MessageListActivity : AppCompatActivity(), Store.Delegate {
 
-    private val hypeFramework = application as HypeLifeCycle
-    private val userIdentifier = intent.getLongExtra("userIdentifier", 0)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +31,8 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
         mMessageRecycler.layoutManager = LinearLayoutManager(this)
         mMessageRecycler.adapter = mMessageAdapter
 
+        val hypeFramework = applicationContext as HypeLifeCycle
+        val userIdentifier = intent.getLongExtra("userIdentifier", 0)
         // Setting actionbar with name of user
         if(userIdentifier != 0.toLong()) {
             if(userIdentifier in hypeFramework.getAllContacts()) {
@@ -46,6 +46,9 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
         super.onStart()
         // checking to see which user chat they want, or if it's a new message
         // TODO: made a new separate class for new messages for now, condense that into this class when I have everything set up
+
+        val hypeFramework = applicationContext as HypeLifeCycle
+        val userIdentifier = intent.getLongExtra("userIdentifier", 0)
         if(userIdentifier in hypeFramework.getAllMessages()) {
             val store = getStore()
             store.delegate = this
@@ -92,7 +95,7 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
         // In order to track message delivery set the last parameter to true. Notice that this
         // is not recommend, as it incurs extra overhead on the network. Use this feature only
         // if progress tracking is really necessary.
-        return Hype.send(data, instance, false)
+        return Hype.send(data, instance, true)
     }
 
     override fun onMessageAdded(store: Store, message: Message) {
@@ -113,6 +116,8 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
 
     // getting Store of this chat (which is where messages are stored)
     private fun getStore(): Store {
+        val hypeFramework = applicationContext as HypeLifeCycle
+        val userIdentifier = intent.getLongExtra("userIdentifier", 0)
         return hypeFramework.getAllMessages()[userIdentifier]!!
     }
 }

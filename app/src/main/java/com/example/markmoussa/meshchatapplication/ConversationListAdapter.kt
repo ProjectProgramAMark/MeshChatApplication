@@ -14,18 +14,19 @@ import java.util.*
  */
 
 class ConversationListAdapter(private val mContext: Context, private val mConversationList: List<Conversation>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
     override fun getItemCount(): Int {
         return mConversationList.size
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val conversation = mConversationList[position]
 
         (holder as ConversationHolder).bind(conversation)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecyclerView.ViewHolder {
-        val view: View = LayoutInflater.from(parent!!.context)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val view: View = LayoutInflater.from(parent.context)
                 .inflate(R.layout.item_conversation, parent, false)
         return ConversationHolder(view)
 
