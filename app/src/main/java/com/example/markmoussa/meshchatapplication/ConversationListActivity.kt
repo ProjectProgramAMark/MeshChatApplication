@@ -4,6 +4,10 @@ package com.example.markmoussa.meshchatapplication
  * Created by markmoussa on 2/24/18.
  */
 
+import android.arch.lifecycle.Lifecycle
+import android.arch.lifecycle.LifecycleObserver
+import android.arch.lifecycle.OnLifecycleEvent
+import android.arch.lifecycle.ProcessLifecycleOwner
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -18,15 +22,33 @@ import android.view.View
 import com.hypelabs.hype.Message
 
 
-class ConversationListActivity : AppCompatActivity(), Store.Delegate {
+class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleObserver {
+
+//    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+//    fun onAppResumed() {
+//        Log.i("DEBUG ", "ON APP RESUMED CALLED")
+//        val hypeFramework = applicationContext as HypeLifeCycle
+//        hypeFramework.requestHypeToStop()
+//    }
+//
+//    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+//    fun onAppPASED() {
+//        Log.i("DEBUG ", "ON APP RESUMED CALLED")
+//        val hypeFramework = applicationContext as HypeLifeCycle
+//        hypeFramework.requestHypeToStop()
+//    }
 
     lateinit var mConversationList: MutableList<Conversation>
+    lateinit var lifeCycleObserver: LifecycleObserverActivity
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_conversation_list)
 
         val hypeFramework = applicationContext as HypeLifeCycle
+
+        //TODO: START HERE
+        ProcessLifecycleOwner.get().lifecycle.addObserver(LifecycleObserverActivity(this).also { lifeCycleObserver = it})
 
         mConversationList = populateConversationList()
 

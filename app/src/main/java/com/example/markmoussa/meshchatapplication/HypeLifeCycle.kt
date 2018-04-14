@@ -24,7 +24,7 @@ import kotlin.collections.HashMap
 import kotlin.properties.Delegates
 
 
-class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, MessageObserver, HypeKeepForeground.LifecycleDelegate {
+class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Application() {
 
     // The onlinePeers object keeps track of message storage associated with each instance (peer)
     var onlinePeers: MutableList<Long> by Delegates.observable(mutableListOf()) {
@@ -41,16 +41,16 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
 
     private lateinit var dirPath: File
 
-    override fun onApplicationStart(app: Application) {
-        requestHypeToStart()
-    }
+//    override fun onApplicationStart(app: Application) {
+//        requestHypeToStart()
+//    }
+//
+//    override fun onApplicationStop(app: Application) {
+//
+//        requestHypeToStop()
+//    }
 
-    override fun onApplicationStop(app: Application) {
-
-        requestHypeToStop()
-    }
-
-    private fun requestHypeToStart() {
+    fun requestHypeToStart() {
         Hype.setContext(applicationContext)
 
         // Add this as an Hype observer
@@ -67,7 +67,7 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
         Hype.start()
     }
 
-    protected fun requestHypeToStop() {
+    fun requestHypeToStop() {
         // The current release has a known issue with Bluetooth Low Energy that causes all
         // connections to drop when the SDK is stopped. This is an Android issue.
         Hype.stop()
@@ -188,7 +188,7 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
     override fun onCreate() {
 
         super.onCreate()
-        setLifecyleDelegate(this)
+//        setLifecyleDelegate(this)
 
         // have to assign file directory here because context of app is needed for it and that is
         // not available until onCreate() is called
