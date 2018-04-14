@@ -17,13 +17,14 @@ import java.io.UnsupportedEncodingException
 
 class MessageListActivity : AppCompatActivity(), Store.Delegate {
 
+    private lateinit var mMessageList: MutableList<Message>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_message_list)
 
         // getting the messages
-        val mMessageList: List<Message> = getStore().getMessages()!!.toList()
+        mMessageList = populateMessageList()
         var mMessageRecycler: RecyclerView? = null
         var mMessageAdapter: MessageListAdapter? = null
         mMessageRecycler = findViewById<RecyclerView>(R.id.recyclerview_message_list) as RecyclerView
@@ -51,6 +52,7 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
         val userIdentifier = intent.getLongExtra("userIdentifier", 0)
         if(userIdentifier in hypeFramework.getAllMessages()) {
             val store = getStore()
+            Log.i("DEBUG: ", "Store is this: " + store.getMessages().toString())
             store.delegate = this
             store.lastReadIndex = store.getMessages()!!.size
 
@@ -73,12 +75,17 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
                     val message = sendMessage(text, store.instance)
                     chatBox.setText("")
                     store.add(message, this)
+                    Log.i("DEBUG: ", "Updated store is this: " + store.getMessages().toString())
                 } catch(e: UnsupportedEncodingException) {
                     e.printStackTrace()
                 }
             }
         }
 
+    }
+
+    private fun populateMessageList(): MutableList<Message> {
+        return getStore().getMessages()!!.toMutableList()
     }
 
 
@@ -99,6 +106,8 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
     }
 
     override fun onMessageAdded(store: Store, message: Message) {
+        Log.v("ONMESSAGEADDED: ", "onMessageAdded called in MessageListActivity")
+        mMessageList = populateMessageList()
         this.runOnUiThread {
             val recyclerView = findViewById<RecyclerView>(R.id.recyclerview_message_list) as RecyclerView
 

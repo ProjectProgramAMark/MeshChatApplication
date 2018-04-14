@@ -239,6 +239,7 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
                 val ois = ObjectInputStream(fis)
                 val result = ois.readObject() as MutableList<Long>
                 ois.close()
+                Log.i("DEBUG: ", "readOnlinePeers() returned: " + result.toString())
                 return result
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -255,7 +256,7 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
             }
             val fos = FileOutputStream(storeFile)
             val oos = ObjectOutputStream(fos)
-            oos.writeObject(getAllOnlinePeers())
+            oos.writeObject(onlinePeers)
             oos.close()
         } catch(e: Exception) {
             e.printStackTrace()
@@ -273,6 +274,7 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
                 val ois = ObjectInputStream(fis)
                 val result = ois.readObject() as HashMap<Long, Store>
                 ois.close()
+                Log.i("DEBUG: ", "readMessageDatabase() returned: " + result.toString())
                 return result
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -290,7 +292,7 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
             }
             val fos = FileOutputStream(messageDatabaseFile)
             val oos = ObjectOutputStream(fos)
-            oos.writeObject(getAllMessages())
+            oos.writeObject(messageDatabase)
             oos.close()
         } catch(e: Exception) {
             e.printStackTrace()
@@ -308,6 +310,7 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
                 val ois = ObjectInputStream(fis)
                 val result = ois.readObject() as HashMap<Long, User>
                 ois.close()
+                Log.i("DEBUG: ", "readContactsDatabase() returned: " + result.toString())
                 return result
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -324,8 +327,9 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
             }
             val fos = FileOutputStream(contactsFile)
             val oos = ObjectOutputStream(fos)
-            oos.writeObject(getAllOnlinePeers())
+            oos.writeObject(contactsDatabase)
             oos.close()
+
         } catch(e: Exception) {
             e.printStackTrace()
         }
@@ -336,8 +340,10 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
         // are useful for keeping track of which instances are ready to communicate.
         getAllOnlinePeers().add(instance.userIdentifier)
         setAllOnlinePeers(instance.userIdentifier)
+        Log.i("DEBUG ", "New onlinePeers: " + getAllOnlinePeers().toString())
         if(getAllMessages()[instance.userIdentifier] == null) {
             setMessageDatabase(instance.userIdentifier, Store(instance))
+            Log.i("DEBUG ", "New messageDatabase: " + getAllMessages().toString())
         }
         if(readContactsDatabase()[instance.userIdentifier] == null) {
             val sharedPreferences: SharedPreferences = applicationContext.getSharedPreferences("sp", Context.MODE_PRIVATE)
@@ -350,6 +356,8 @@ class HypeLifeCycle : HypeKeepForeground(), StateObserver, NetworkObserver, Mess
             if(profilePicPath != null) {
                 profilePic = BitmapFactory.decodeFile(profilePicPath)
             }
+            // TODO: Set announcement before Hype starts, but after user chooses username and whatnot
+            // TODO: this may mean having to start Hype not on application startup, but on ConversationListActivity start
             // sending the username of the contact if user doesn't have it saved already
             Hype.setAnnouncement(User(username, profilePicPath, instance.userIdentifier, profilePic).toString().toByteArray())
 

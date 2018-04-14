@@ -26,6 +26,8 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_conversation_list)
 
+        val hypeFramework = applicationContext as HypeLifeCycle
+
         mConversationList = populateConversationList()
 
         var mConversationListRecycler: RecyclerView? = null
@@ -42,7 +44,6 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate {
                 // when item (conversation) is clicked, go to that conversation's message list
                 Log.i("TEST: ", "This is a test, item number " + position.toString() + " picked.")
                 val userIdentifier = mConversationList[position].user?.userIdentifier
-                val hypeFramework = applicationContext as HypeLifeCycle
                 val contactStore = hypeFramework.getAllMessages()[userIdentifier]
                 contactStore?.delegate = this@ConversationListActivity
                 val intent = Intent(this@ConversationListActivity, MessageListActivity::class.java)
@@ -123,6 +124,7 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate {
             }
             conversationList.add(Conversation(User(nickname, null, x.key), null, x.value, currentlyOnline))
         }
+        Log.i("DEBUG: ", "populateConversationList() returned: " + conversationList.toString())
         return conversationList
     }
 
