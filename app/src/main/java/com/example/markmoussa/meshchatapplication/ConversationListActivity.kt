@@ -24,20 +24,6 @@ import com.hypelabs.hype.Message
 
 class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleObserver {
 
-//    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-//    fun onAppResumed() {
-//        Log.i("DEBUG ", "ON APP RESUMED CALLED")
-//        val hypeFramework = applicationContext as HypeLifeCycle
-//        hypeFramework.requestHypeToStop()
-//    }
-//
-//    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-//    fun onAppPASED() {
-//        Log.i("DEBUG ", "ON APP RESUMED CALLED")
-//        val hypeFramework = applicationContext as HypeLifeCycle
-//        hypeFramework.requestHypeToStop()
-//    }
-
     lateinit var mConversationList: MutableList<Conversation>
     lateinit var lifeCycleObserver: LifecycleObserverActivity
 
@@ -141,12 +127,17 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleO
                 // I get the actual user here. Consider just passing that into the conversation instead of
                 // creating a brand new one
                 nickname = hypeFramework.getAllContacts()[x.key]!!.nickname
+                Log.i("DEBUG", "Nickname is: $nickname")
             } else {
                 nickname = null
             }
             conversationList.add(Conversation(User(nickname, null, x.key), null, x.value, currentlyOnline))
         }
-        Log.i("DEBUG: ", "populateConversationList() returned: " + conversationList.toString())
+        // Debugging
+        Log.i("DEBUG: ", "populateConversationList() returned: ")
+        for(x in conversationList) {
+            Log.i("DEBUG", "User nickname: ${x.user?.nickname}, User Identifier: ${x.user?.userIdentifier}, user online: ${x.currentlyOnline}")
+        }
         return conversationList
     }
 

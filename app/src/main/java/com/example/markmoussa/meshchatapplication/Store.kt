@@ -12,7 +12,7 @@ import java.lang.ref.WeakReference
 import java.util.Vector
 
 class Store(val instance: Instance) {
-    private var messages: Vector<Message>? = null
+    private var messages: Vector<Message> = Vector()
     var lastReadIndex: Int = 0
     private var delegateWeakReference: WeakReference<Delegate?>? = null
 
@@ -36,7 +36,7 @@ class Store(val instance: Instance) {
     // because Stores is a singleton class
     fun add(message: Message, context: Context) {
 
-        getMessages()!!.add(message)
+        getMessages().add(message)
         val hypeFramework = context.applicationContext as HypeLifeCycle
          hypeFramework.setMessageDatabase(instance.userIdentifier, this)
         val delegate = delegate
@@ -45,11 +45,7 @@ class Store(val instance: Instance) {
 
     }
 
-    fun getMessages(): Vector<Message>? {
-        if (messages == null) {
-            messages = Vector()
-        }
-
+    fun getMessages(): Vector<Message> {
         return messages
     }
 
@@ -59,16 +55,16 @@ class Store(val instance: Instance) {
     }
 
     fun getMessageStringAtIndex(index: Int): String? {
-        if(messages == null || messages!!.size >= index) {
+        if(messages.isEmpty() || messages!!.size >= index) {
             // this means there's no message at this index and therefore need to return null
             return null
         }
-        return messages!![index].toString()
+        return messages[index].toString()
 
     }
 
     fun getMessageAtIndex(index: Int): Message {
-        return messages!![index]
+        return messages[index]
     }
 
     // TODO: write a function to update the stores value's last read index (here and in HypeLifeCycle)

@@ -41,15 +41,6 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
 
     private lateinit var dirPath: File
 
-//    override fun onApplicationStart(app: Application) {
-//        requestHypeToStart()
-//    }
-//
-//    override fun onApplicationStop(app: Application) {
-//
-//        requestHypeToStop()
-//    }
-
     fun requestHypeToStart() {
         Hype.setContext(applicationContext)
 
@@ -382,6 +373,6 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
 
     companion object {
 
-        private val TAG = HypeKeepForeground::class.java.name
+        private const val TAG = "HypeServices"
     }
 }

@@ -13,6 +13,7 @@ import android.widget.Button
 import android.widget.EditText
 import com.hypelabs.hype.*
 import java.io.UnsupportedEncodingException
+import java.util.*
 
 
 class MessageListActivity : AppCompatActivity(), Store.Delegate {
@@ -52,7 +53,11 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
         val userIdentifier = intent.getLongExtra("userIdentifier", 0)
         if(userIdentifier in hypeFramework.getAllMessages()) {
             val store = getStore()
-            Log.i("DEBUG: ", "Store is this: " + store.getMessages().toString())
+            // debugging
+            Log.i("DEBUG ", "Store is this: ")
+            for(x in store.getMessages()) {
+                Log.i("DBEUG", x.data.toString())
+            }
             store.delegate = this
             store.lastReadIndex = store.getMessages()!!.size
 
@@ -75,7 +80,11 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
                     val message = sendMessage(text, store.instance)
                     chatBox.setText("")
                     store.add(message, this)
-                    Log.i("DEBUG: ", "Updated store is this: " + store.getMessages().toString())
+                    // debugging
+                    Log.i("DEBUG ", "Updated store is this: ")
+                    for(x in store.getMessages()) {
+                        Log.i("DBEUG", x.data.toString())
+                    }
                 } catch(e: UnsupportedEncodingException) {
                     e.printStackTrace()
                 }
@@ -118,8 +127,8 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
 
     override fun onBackPressed() {
         super.onBackPressed()
-        if(getStore() != null) {
-            getStore().lastReadIndex = getStore().getMessages()!!.size
+        if(!(getStore().getMessages().isEmpty())) {
+            getStore().lastReadIndex = getStore().getMessages().size
         }
     }
 
