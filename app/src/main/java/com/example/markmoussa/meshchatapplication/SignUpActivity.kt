@@ -14,11 +14,11 @@ import android.widget.Button
 import android.widget.EditText
 import android.provider.MediaStore
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.widget.ImageView
-import java.io.File
-import java.io.FileOutputStream
-import java.io.OutputStream
+import com.hypelabs.hype.Hype
+import java.io.*
 import java.nio.ByteBuffer
 
 
@@ -37,12 +37,18 @@ class SignUpActivity : AppCompatActivity() {
             // TODO: Edit this and uncomment line below once I find out whether I'm doing this right (by converting string to integer)
             sharedPrefEditor.putString("USERNAME", usernameTextEdit.text.toString())
             sharedPrefEditor.apply()
-//            Hype.setUserIdentifier(usernameTextEdit.text.toString().toInt())
-            // getting userIdentifier for Hype by converting username to bytes and truncating at 8 bytes
             val userIdentifierByteArray: ByteArray = usernameTextEdit.text.toString().toByteArray().copyOf(64)
             val bb = ByteBuffer.wrap(userIdentifierByteArray)
             val userIdentifier: Int = bb.int
             sharedPrefEditor.putInt("USER_IDENTIFIER", userIdentifier)
+            val profilePicPath = sharedPreferences.getString("PROFILE_PIC_PATH", null)
+            var profilePic: Bitmap? = null
+            if(profilePicPath != null) {
+                profilePic = BitmapFactory.decodeFile(profilePicPath)
+            }
+            // Making userIdentifier null in order to save space since the User object serializes to 288
+            // bytes and the limit for Hype SDK for now is 255 bytes
+            Hype.setAnnouncement(User(usernameTextEdit.text.toString(), profilePicPath, null, profilePic).serializeUser())
             val intent = Intent(this, ConversationListActivity::class.java)
             startActivity(intent)
         }
@@ -50,7 +56,18 @@ class SignUpActivity : AppCompatActivity() {
             val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             startActivityForResult(galleryIntent, 1)
         }
-        if(sharedPreferences.contains("USERNAME")) {
+        if(sharedPreferences.contains("USERNAME") && sharedPreferences.contains("USER_IDENTIFIER")) {
+            // Setting Hype announcement so host can send their info to other contact on handshake
+            val username = sharedPreferences.getString("USERNAME", null)
+            val userIdentifier = sharedPreferences.getInt("USER_IDENTIFIER", -1)
+            val profilePicPath = sharedPreferences.getString("PROFILE_PIC_PATH", null)
+            var profilePic: Bitmap? = null
+            if(profilePicPath != null) {
+                profilePic = BitmapFactory.decodeFile(profilePicPath)
+            }
+            Hype.setAnnouncement(User(username, profilePicPath, userIdentifier.toLong(), profilePic).serializeUser())
+            //TODO: Add this same functionality (the setting of the Hype announcement right above) in case username isn't there (aka it's their first start)
+            // Starting ConversationListActivity
             val intent = Intent(this, ConversationListActivity::class.java)
             startActivity(intent)
         }

@@ -18,14 +18,14 @@ import java.util.*
 
 class MessageListActivity : AppCompatActivity(), Store.Delegate {
 
-    private lateinit var mMessageList: MutableList<Message>
+    private var mMessageList: MutableList<Message> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_message_list)
 
         // getting the messages
-        mMessageList = populateMessageList()
+        populateMessageList()
         var mMessageRecycler: RecyclerView? = null
         var mMessageAdapter: MessageListAdapter? = null
         mMessageRecycler = findViewById<RecyclerView>(R.id.recyclerview_message_list) as RecyclerView
@@ -38,8 +38,9 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
         // Setting actionbar with name of user
         if(userIdentifier != 0.toLong()) {
             if(userIdentifier in hypeFramework.getAllContacts()) {
-                val actionBar = actionBar
-                actionBar.title = hypeFramework.getAllContacts()[userIdentifier]?.nickname
+                val actionBar = supportActionBar
+                Log.i("DEBUG ", "Actionbar title would be: ${hypeFramework.getAllContacts()[userIdentifier]!!.nickname}")
+                actionBar!!.title = hypeFramework.getAllContacts()[userIdentifier]!!.nickname
             }
         }
     }
@@ -59,7 +60,7 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
                 Log.i("DBEUG", x.data.toString())
             }
             store.delegate = this
-            store.lastReadIndex = store.getMessages()!!.size
+            store.lastReadIndex = store.getMessages().size
 
             val chatBox = findViewById<EditText>(R.id.edittext_chatbox) as EditText
             val sendButton = findViewById<Button>(R.id.button_chatbox_send) as Button
@@ -93,8 +94,9 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
 
     }
 
-    private fun populateMessageList(): MutableList<Message> {
-        return getStore().getMessages()!!.toMutableList()
+    private fun populateMessageList() {
+        mMessageList.clear()
+        mMessageList.addAll(getStore().getMessages().toMutableList())
     }
 
 
@@ -116,12 +118,8 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
 
     override fun onMessageAdded(store: Store, message: Message) {
         Log.v("ONMESSAGEADDED: ", "onMessageAdded called in MessageListActivity")
-        mMessageList = populateMessageList()
-        this.runOnUiThread {
-            val recyclerView = findViewById<RecyclerView>(R.id.recyclerview_message_list) as RecyclerView
+        populateMessageList()
 
-            (recyclerView.adapter as MessageListAdapter).notifyDataSetChanged()
-        }
     }
 
 
@@ -137,5 +135,13 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
         val hypeFramework = applicationContext as HypeLifeCycle
         val userIdentifier = intent.getLongExtra("userIdentifier", 0)
         return hypeFramework.getAllMessages()[userIdentifier]!!
+    }
+
+    private fun updateInterface() {
+        this.runOnUiThread {
+            val recyclerView = findViewById<RecyclerView>(R.id.recyclerview_message_list) as RecyclerView
+
+            (recyclerView.adapter as MessageListAdapter).notifyDataSetChanged()
+        }
     }
 }

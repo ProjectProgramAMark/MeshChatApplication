@@ -10,6 +10,7 @@ import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Base64
 import android.util.Log
 import com.hypelabs.hype.Error
 import com.hypelabs.hype.Hype
@@ -19,7 +20,9 @@ import com.hypelabs.hype.MessageInfo
 import com.hypelabs.hype.MessageObserver
 import com.hypelabs.hype.NetworkObserver
 import com.hypelabs.hype.StateObserver
+import org.json.JSONObject
 import java.io.*
+import java.nio.charset.Charset
 import kotlin.collections.HashMap
 import kotlin.properties.Delegates
 
@@ -80,6 +83,7 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
         }
 
         Log.i(TAG, String.format("Hype stopped [%s]", description))
+        readOnlinePeers()
     }
 
     override fun onHypeFailedStarting(error: Error) {
@@ -179,7 +183,6 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
     override fun onCreate() {
 
         super.onCreate()
-//        setLifecyleDelegate(this)
 
         // have to assign file directory here because context of app is needed for it and that is
         // not available until onCreate() is called
@@ -336,23 +339,15 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
             setMessageDatabase(instance.userIdentifier, Store(instance))
             Log.i("DEBUG ", "New messageDatabase: " + getAllMessages().toString())
         }
-        if(readContactsDatabase()[instance.userIdentifier] == null) {
-            val sharedPreferences: SharedPreferences = applicationContext.getSharedPreferences("sp", Context.MODE_PRIVATE)
-            var username = sharedPreferences.getString("USERNAME", null)
-            if(username == null) {
-               username = Hype.getHostInstance().toString()
-            }
-            var profilePicPath = sharedPreferences.getString("PROFILE_PIC_PATH", null)
-            var profilePic: Bitmap? = null
-            if(profilePicPath != null) {
-                profilePic = BitmapFactory.decodeFile(profilePicPath)
-            }
-            // TODO: Set announcement before Hype starts, but after user chooses username and whatnot
-            // TODO: this may mean having to start Hype not on application startup, but on ConversationListActivity start
-            // sending the username of the contact if user doesn't have it saved already
-            Hype.setAnnouncement(User(username, profilePicPath, instance.userIdentifier, profilePic).toString().toByteArray())
-
-
+        if(!(readContactsDatabase().containsKey(instance.userIdentifier))) {
+            // restoring User object from serialized byteArray
+            val bis = ByteArrayInputStream(instance.announcement)
+            val ois = ObjectInputStream(bis)
+            val newUser: User = ois.readObject() as User
+            // for now, userIdentifier in User object is null (because Hype SDK only allows for 255 bytes
+            // and adding the userIdentifier exceeds the limit)
+            Log.i("DEBUG ", "NEWUSER OBJECT: ${newUser.toString()}")
+            setContactsDatabase(instance.userIdentifier, newUser)
         }
 
 //        // Notify the conversationList activity to refresh the UI

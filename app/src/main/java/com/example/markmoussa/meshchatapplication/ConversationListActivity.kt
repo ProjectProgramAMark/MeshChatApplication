@@ -24,7 +24,7 @@ import com.hypelabs.hype.Message
 
 class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleObserver {
 
-    lateinit var mConversationList: MutableList<Conversation>
+    var mConversationList: MutableList<Conversation> = mutableListOf()
     lateinit var lifeCycleObserver: LifecycleObserverActivity
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,7 +36,7 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleO
         //TODO: START HERE
         ProcessLifecycleOwner.get().lifecycle.addObserver(LifecycleObserverActivity(this).also { lifeCycleObserver = it})
 
-        mConversationList = populateConversationList()
+        populateConversationList()
 
         var mConversationListRecycler: RecyclerView? = null
         var mConversationListAdapter: ConversationListAdapter? = null
@@ -114,9 +114,9 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleO
     }
 
 
-    private fun populateConversationList(): MutableList<Conversation> {
+    private fun populateConversationList() {
         // creating conversations list
-        val conversationList = mutableListOf<Conversation>()
+        mConversationList.clear()
         val hypeFramework = applicationContext as HypeLifeCycle
         var currentlyOnline: Boolean
         for(x in hypeFramework.getAllMessages()) {
@@ -131,14 +131,13 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleO
             } else {
                 nickname = null
             }
-            conversationList.add(Conversation(User(nickname, null, x.key), null, x.value, currentlyOnline))
+            mConversationList.add(Conversation(User(nickname, null, x.key), null, x.value, currentlyOnline))
         }
         // Debugging
         Log.i("DEBUG: ", "populateConversationList() returned: ")
-        for(x in conversationList) {
+        for(x in mConversationList) {
             Log.i("DEBUG", "User nickname: ${x.user?.nickname}, User Identifier: ${x.user?.userIdentifier}, user online: ${x.currentlyOnline}")
         }
-        return conversationList
     }
 
     override fun onMessageAdded(store: Store, message: Message) {
@@ -147,7 +146,7 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleO
     }
 
     fun notifyOnlinePeersChanged() {
-        mConversationList = populateConversationList()
+        populateConversationList()
         updateInterface()
     }
 
