@@ -56,7 +56,9 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
         // by creating a new app. Copy the given identifier here.
         Hype.setAppIdentifier("f370ac17")
         val sharedPreferences: SharedPreferences = applicationContext.getSharedPreferences("sp", Context.MODE_PRIVATE)
+        Log.i("DEBUG ", "Hype DefaultUserIdentifier: ${Hype.DefaultUserIdentifier.toString()}")
         val userIdentifier = sharedPreferences.getInt("USER_IDENTIFIER", Hype.DefaultUserIdentifier)
+        Log.i("DEBUG ", "User Identifier (from HypeLifeCycle): ${Hype.DefaultUserIdentifier.toString()}")
         Hype.setUserIdentifier(userIdentifier)
         Hype.start()
     }

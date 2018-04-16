@@ -33,7 +33,6 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleO
 
         val hypeFramework = applicationContext as HypeLifeCycle
 
-        //TODO: START HERE
         ProcessLifecycleOwner.get().lifecycle.addObserver(LifecycleObserverActivity(this).also { lifeCycleObserver = it})
 
         populateConversationList()
@@ -120,7 +119,6 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleO
         val hypeFramework = applicationContext as HypeLifeCycle
         var currentlyOnline: Boolean
         for(x in hypeFramework.getAllMessages()) {
-            // TODO: Implement User nickname when I enable setUserIdentifier on Hype SDK
             currentlyOnline = x.key in hypeFramework.getAllOnlinePeers()
             val nickname: String?
             if(x.key in hypeFramework.getAllContacts()) {

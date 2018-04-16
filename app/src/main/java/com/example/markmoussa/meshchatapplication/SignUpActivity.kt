@@ -16,6 +16,7 @@ import android.provider.MediaStore
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.util.Log
 import android.widget.ImageView
 import com.hypelabs.hype.Hype
 import java.io.*
@@ -35,12 +36,14 @@ class SignUpActivity : AppCompatActivity() {
         continueButton.setOnClickListener {
             val sharedPrefEditor: SharedPreferences.Editor = sharedPreferences.edit()
             // TODO: Edit this and uncomment line below once I find out whether I'm doing this right (by converting string to integer)
+            Log.i("DEBUG ", "Username is: ${usernameTextEdit.text.toString()}")
             sharedPrefEditor.putString("USERNAME", usernameTextEdit.text.toString())
-            sharedPrefEditor.apply()
-            val userIdentifierByteArray: ByteArray = usernameTextEdit.text.toString().toByteArray().copyOf(64)
+            val userIdentifierByteArray: ByteArray = usernameTextEdit.text.toString().toByteArray(charset("UTF-8")).copyOf(64)
             val bb = ByteBuffer.wrap(userIdentifierByteArray)
             val userIdentifier: Int = bb.int
+            Log.i("DEBUG ", "User Identifier is: ${userIdentifier.toString()}")
             sharedPrefEditor.putInt("USER_IDENTIFIER", userIdentifier)
+            sharedPrefEditor.apply()
             val profilePicPath = sharedPreferences.getString("PROFILE_PIC_PATH", null)
             var profilePic: Bitmap? = null
             if(profilePicPath != null) {
@@ -65,7 +68,9 @@ class SignUpActivity : AppCompatActivity() {
             if(profilePicPath != null) {
                 profilePic = BitmapFactory.decodeFile(profilePicPath)
             }
-            Hype.setAnnouncement(User(username, profilePicPath, userIdentifier.toLong(), profilePic).serializeUser())
+            // Making userIdentifier null in order to save space since the User object serializes to 288
+            // bytes and the limit for Hype SDK for now is 255 bytes
+            Hype.setAnnouncement(User(username, profilePicPath, null, profilePic).serializeUser())
             //TODO: Add this same functionality (the setting of the Hype announcement right above) in case username isn't there (aka it's their first start)
             // Starting ConversationListActivity
             val intent = Intent(this, ConversationListActivity::class.java)
@@ -106,7 +111,6 @@ class SignUpActivity : AppCompatActivity() {
             output.flush()
             output.close()
         } catch (e: Exception) {
-            // TODO Auto-generated catch block
             e.printStackTrace()
         }
 
