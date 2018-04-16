@@ -8,12 +8,14 @@ import android.content.Context
 import android.support.v7.widget.RecyclerView
 import android.text.format.DateUtils
 import android.text.format.DateUtils.*
+import android.util.Log
 import android.widget.TextView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import com.hypelabs.hype.Message
+import java.io.ByteArrayInputStream
 
 
 // BaseMessage is specific to SendBird, fix later
@@ -48,6 +50,7 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
             // If some other user sent the message
             VIEW_TYPE_MESSAGE_RECEIVED
         }
+
     }
 
     // Inflates the appropriate layout according to the ViewType.
@@ -81,18 +84,13 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
     }
 
     private inner class SentMessageHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        internal var messageText: TextView
-        internal var timeText: TextView
-
-        init {
-
-            messageText = itemView.findViewById(R.id.text_message_body)
-            timeText = itemView.findViewById(R.id.text_message_time)
-        }
+        internal var messageText: TextView = itemView.findViewById(R.id.text_message_body)
+        internal var timeText: TextView = itemView.findViewById(R.id.text_message_time)
 
         // UserMessage is specific to SendBird, fix later
         internal fun bind(message: Message) {
-            messageText.text = message.data.toString()
+            messageText.text = message.data.toString(charset("UTF-8"))
+            Log.i("DEBUG ", "Message text from adapter: ${messageText.text}")
 
             // Format the stored timestamp into a readable String using method.
             // Utils specific to SendBird, fix later
@@ -117,6 +115,7 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
 
         internal fun bind(message: Message) {
             messageText.text = message.data.toString()
+            Log.i("DEBUG ", "Message text from adapter: ${messageText.text}")
 
             // Format the stored timestamp into a readable String using method.
             // TODO: Replace HOUR_IN_MILLIS and FORMAT_SHOW_TIME to get metadata from Hype Messages

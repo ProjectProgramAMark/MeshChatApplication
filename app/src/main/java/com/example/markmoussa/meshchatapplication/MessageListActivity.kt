@@ -6,6 +6,7 @@ package com.example.markmoussa.meshchatapplication
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -13,26 +14,24 @@ import android.widget.Button
 import android.widget.EditText
 import com.hypelabs.hype.*
 import java.io.UnsupportedEncodingException
-import java.util.*
 
 
 class MessageListActivity : AppCompatActivity(), Store.Delegate {
 
     private var mMessageList: MutableList<Message> = mutableListOf()
+    private lateinit var mMessageAdapter: MessageListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_message_list)
 
-        // getting the messages
-        populateMessageList()
-        var mMessageRecycler: RecyclerView? = null
-        var mMessageAdapter: MessageListAdapter? = null
-        mMessageRecycler = findViewById<RecyclerView>(R.id.recyclerview_message_list) as RecyclerView
         mMessageAdapter = MessageListAdapter(this, mMessageList)
+        var mMessageRecycler: RecyclerView? = null
+        mMessageRecycler = findViewById<RecyclerView>(R.id.recyclerview_message_list) as RecyclerView
         mMessageRecycler.layoutManager = LinearLayoutManager(this)
         mMessageRecycler.adapter = mMessageAdapter
-
+        // getting the messages
+        notifyMessageListChanged()
         val hypeFramework = applicationContext as HypeLifeCycle
         val userIdentifier = intent.getLongExtra("userIdentifier", 0)
         // Setting actionbar with name of user
@@ -42,6 +41,14 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
                 Log.i("DEBUG ", "Actionbar title would be: ${hypeFramework.getAllContacts()[userIdentifier]!!.nickname}")
                 actionBar!!.title = hypeFramework.getAllContacts()[userIdentifier]!!.nickname
             }
+        }
+
+        // hackish fix at the messages not appearing when notifyDataSetChanged() called. Need to fix later
+        // also need to fix same thing for ConversationListActivity
+        val mSwipeRefreshLayout = findViewById<SwipeRefreshLayout>(R.id.swiperefresh)
+        mSwipeRefreshLayout.setOnRefreshListener {
+            notifyMessageListChanged()
+            mSwipeRefreshLayout.isRefreshing = false
         }
     }
 
@@ -84,7 +91,7 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
                     // debugging
                     Log.i("DEBUG ", "Updated store is this: ")
                     for(x in store.getMessages()) {
-                        Log.i("DBEUG", x.data.toString())
+                        Log.i("DEBUG", x.data.toString())
                     }
                 } catch(e: UnsupportedEncodingException) {
                     e.printStackTrace()
@@ -97,6 +104,20 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
     private fun populateMessageList() {
         mMessageList.clear()
         mMessageList.addAll(getStore().getMessages().toMutableList())
+        // Debugging
+        Log.i("DEBUG: ", "populateMessageList() returned: ")
+        if(!(mMessageList.isEmpty())) {
+            for(x in mMessageList) {
+                Log.i("DEBUG", "message: ${x.data.toString()}")
+            }
+        } else {
+            Log.i("DEBUG ", "Message List is empty at the moment")
+        }
+    }
+
+    private fun notifyMessageListChanged() {
+        populateMessageList()
+        updateInterface()
     }
 
 
@@ -118,8 +139,7 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
 
     override fun onMessageAdded(store: Store, message: Message) {
         Log.v("ONMESSAGEADDED: ", "onMessageAdded called in MessageListActivity")
-        populateMessageList()
-
+        notifyMessageListChanged()
     }
 
 

@@ -208,8 +208,13 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
     }
 
     // adds online peer to onlinePeers and triggers updating online peers file in memory
-    private fun setAllOnlinePeers(userIdentifier: Long) {
-        onlinePeers.add(userIdentifier)
+    private fun setAllOnlinePeers(userIdentifier: Long, addOrRemove: Boolean) {
+        // true = add, false = remove
+        if(addOrRemove) {
+            onlinePeers.add(userIdentifier)
+        } else {
+            onlinePeers.remove(userIdentifier)
+        }
     }
 
     // adds message to store and triggers updating store file in memory
@@ -333,7 +338,7 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
         // Instances should be strongly kept by some data structure. Their identifiers
         // are useful for keeping track of which instances are ready to communicate.
         getAllOnlinePeers().add(instance.userIdentifier)
-        setAllOnlinePeers(instance.userIdentifier)
+        setAllOnlinePeers(instance.userIdentifier, true)
         Log.i("DEBUG ", "New onlinePeers: " + getAllOnlinePeers().toString())
         if(getAllMessages()[instance.userIdentifier] == null) {
             setMessageDatabase(instance.userIdentifier, Store(instance))
@@ -358,8 +363,8 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
     fun removeFromResolvedInstancesMap(instance: Instance) {
         // Cleaning up is always a good idea. It's not possible to communicate with instances
         // that were previously lost.
-        getAllOnlinePeers().remove(instance.userIdentifier)
-        setAllOnlinePeers(instance.userIdentifier)
+//        getAllOnlinePeers().remove(instance.userIdentifier)
+        setAllOnlinePeers(instance.userIdentifier, false)
 
         // Notify the conversationList activity to refresh the UI
 //        val conversationListActivity = ConversationListActivity()
