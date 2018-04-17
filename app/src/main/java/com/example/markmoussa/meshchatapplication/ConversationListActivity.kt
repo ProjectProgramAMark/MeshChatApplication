@@ -125,18 +125,22 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleO
                 // I get the actual user here. Consider just passing that into the conversation instead of
                 // creating a brand new one
                 nickname = hypeFramework.getAllContacts()[x.key]!!.nickname
-                Log.i("DEBUG", "Nickname is: $nickname")
+                Log.d("ConversationListActivit", "Nickname is: $nickname")
             } else {
                 nickname = null
             }
             mConversationList.add(Conversation(User(nickname, null, x.key), null, x.value, currentlyOnline))
         }
         // Debugging
-        Log.i("DEBUG: ", "populateConversationList() returned: ")
+        Log.d("ConversationListActivit", "populateConversationList() returned: ")
         for(x in mConversationList) {
-            Log.i("DEBUG", "User nickname: ${x.user?.nickname}, User Identifier: ${x.user?.userIdentifier}, user online: ${x.currentlyOnline}")
+            Log.d("ConversationListActivit", "User nickname: ${x.user?.nickname}, User Identifier: ${x.user?.userIdentifier}, user online: ${x.currentlyOnline}")
         }
     }
+
+
+    // TODO: Add option to delete conversation
+
 
     override fun onMessageAdded(store: Store, message: Message) {
         updateInterface()

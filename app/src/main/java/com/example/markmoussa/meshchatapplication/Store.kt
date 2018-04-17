@@ -7,11 +7,12 @@ package com.example.markmoussa.meshchatapplication
 import android.content.Context
 import com.hypelabs.hype.Instance
 import com.hypelabs.hype.Message
+import java.io.Serializable
 
 import java.lang.ref.WeakReference
 import java.util.Vector
 
-class Store(val instance: Instance) {
+class Store(val instance: Instance): Serializable {
     private var messages: Vector<Message> = Vector()
     var lastReadIndex: Int = 0
     private var delegateWeakReference: WeakReference<Delegate?>? = null

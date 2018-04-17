@@ -35,13 +35,11 @@ class SignUpActivity : AppCompatActivity() {
         val sharedPreferences: SharedPreferences = applicationContext.getSharedPreferences("sp", Context.MODE_PRIVATE)
         continueButton.setOnClickListener {
             val sharedPrefEditor: SharedPreferences.Editor = sharedPreferences.edit()
-            // TODO: Edit this and uncomment line below once I find out whether I'm doing this right (by converting string to integer)
-            Log.i("DEBUG ", "Username is: ${usernameTextEdit.text.toString()}")
             sharedPrefEditor.putString("USERNAME", usernameTextEdit.text.toString())
             val userIdentifierByteArray: ByteArray = usernameTextEdit.text.toString().toByteArray(charset("UTF-8")).copyOf(64)
             val bb = ByteBuffer.wrap(userIdentifierByteArray)
             val userIdentifier: Int = bb.int
-            Log.i("DEBUG ", "User Identifier is: ${userIdentifier.toString()}")
+            // TODO: Should hash userIdentifier with random salt (and take half so it's 64 bits) to make sure it's not repeated ever
             sharedPrefEditor.putInt("USER_IDENTIFIER", userIdentifier)
             sharedPrefEditor.apply()
             val profilePicPath = sharedPreferences.getString("PROFILE_PIC_PATH", null)

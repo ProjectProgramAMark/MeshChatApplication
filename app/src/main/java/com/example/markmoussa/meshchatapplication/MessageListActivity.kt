@@ -38,7 +38,6 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
         if(userIdentifier != 0.toLong()) {
             if(userIdentifier in hypeFramework.getAllContacts()) {
                 val actionBar = supportActionBar
-                Log.i("DEBUG ", "Actionbar title would be: ${hypeFramework.getAllContacts()[userIdentifier]!!.nickname}")
                 actionBar!!.title = hypeFramework.getAllContacts()[userIdentifier]!!.nickname
             }
         }
@@ -62,7 +61,7 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
         if(userIdentifier in hypeFramework.getAllMessages()) {
             val store = getStore()
             // debugging
-            Log.i("DEBUG ", "Store is this: ")
+            Log.d("MessageListActivity ", "Store is this: ")
             for(x in store.getMessages()) {
                 Log.i("DBEUG", x.data.toString())
             }
@@ -89,9 +88,9 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
                     chatBox.setText("")
                     store.add(message, this)
                     // debugging
-                    Log.i("DEBUG ", "Updated store is this: ")
+                    Log.d("MessageListActivity ", "Updated store is this: ")
                     for(x in store.getMessages()) {
-                        Log.i("DEBUG", x.data.toString())
+                        Log.d("MessageListActivity", x.data.toString(charset("UTF-8")))
                     }
                 } catch(e: UnsupportedEncodingException) {
                     e.printStackTrace()
@@ -105,13 +104,13 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
         mMessageList.clear()
         mMessageList.addAll(getStore().getMessages().toMutableList())
         // Debugging
-        Log.i("DEBUG: ", "populateMessageList() returned: ")
+        Log.d("MessageListActivity: ", "populateMessageList() returned: ")
         if(!(mMessageList.isEmpty())) {
             for(x in mMessageList) {
-                Log.i("DEBUG", "message: ${x.data.toString()}")
+                Log.d("MessageListActivity", "message: ${x.data.toString(charset("UTF-8"))}")
             }
         } else {
-            Log.i("DEBUG ", "Message List is empty at the moment")
+            Log.d("MessageListActivity ", "Message List is empty at the moment")
         }
     }
 
