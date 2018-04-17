@@ -14,6 +14,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import com.github.library.bubbleview.BubbleTextView
 import com.hypelabs.hype.Message
 import java.io.ByteArrayInputStream
 
@@ -84,7 +85,9 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
     }
 
     private inner class SentMessageHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        internal var messageText: TextView = itemView.findViewById(R.id.text_message_body)
+        // debugging
+        //        internal var messageText: TextView = itemView.findViewById(R.id.text_message_body)
+        internal var messageText: BubbleTextView = itemView.findViewById(R.id.bubbleTextView)
         internal var timeText: TextView = itemView.findViewById(R.id.text_message_time)
 
         // UserMessage is specific to SendBird, fix later
@@ -99,18 +102,13 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
     }
 
     private inner class ReceivedMessageHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        internal var messageText: TextView
-        internal var timeText: TextView
-        internal var nameText: TextView
-        internal var profileImage: ImageView
 
-        init {
+        internal var messageText: BubbleTextView = itemView.findViewById(R.id.bubbleTextView)
+        internal var timeText: TextView = itemView.findViewById(R.id.text_message_time)
+        internal var nameText: TextView = itemView.findViewById(R.id.text_message_name)
+        internal var profileImage: ImageView = itemView.findViewById(R.id.image_message_profile) as ImageView
 
-            messageText = itemView.findViewById(R.id.text_message_body)
-            timeText = itemView.findViewById(R.id.text_message_time)
-            nameText = itemView.findViewById(R.id.text_message_name)
-            profileImage = itemView.findViewById<ImageView>(R.id.image_message_profile) as ImageView
-        }
+        
         // UserMessage is specific to SendBird, fix later
 
         internal fun bind(message: Message) {

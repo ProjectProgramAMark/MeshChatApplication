@@ -43,9 +43,8 @@ dependencies {
     implementation "android.arch.lifecycle:viewmodel:1.1.1"
     // alternatively, just LiveData
     implementation "android.arch.lifecycle:livedata:1.1.1"
-
     kapt "android.arch.lifecycle:compiler:1.1.1"
-
     // Test helpers for LiveData
     testImplementation "android.arch.core:core-testing:1.1.1"
+    implementation 'com.github.lguipeng:BubbleView:1.0.1'
 }

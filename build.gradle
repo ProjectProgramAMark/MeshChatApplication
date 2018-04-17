@@ -19,6 +19,8 @@ allprojects {
     repositories {
         google()
         jcenter()
+        // Adding this for the BubbleView for MessageList. Delete when I create my own bubbles
+        maven { url 'https://jitpack.io' }
     }
 }
 
