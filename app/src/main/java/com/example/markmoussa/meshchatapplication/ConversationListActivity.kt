@@ -49,7 +49,7 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleO
         ItemClickSupport.addTo(mConversationListRecycler).setOnItemClickListener(object : ItemClickSupport.OnItemClickListener {
             override fun onItemClicked(recyclerView: RecyclerView, position: Int, v: View) {
                 // when item (conversation) is clicked, go to that conversation's message list
-                Log.i("TEST: ", "This is a test, item number " + position.toString() + " picked.")
+//                Log.i("TEST: ", "This is a test, item number " + position.toString() + " picked.")
                 val userIdentifier = mConversationList[position].user?.userIdentifier
                 val contactStore = hypeFramework.getAllMessages()[userIdentifier]
                 contactStore?.delegate = this@ConversationListActivity
@@ -118,21 +118,22 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleO
         mConversationList.clear()
         val hypeFramework = applicationContext as HypeLifeCycle
         var currentlyOnline: Boolean
+        val contactsList = hypeFramework.getAllContacts()
         for(x in hypeFramework.getAllMessages()) {
             currentlyOnline = x.key in hypeFramework.getAllOnlinePeers()
             val nickname: String?
-            if(x.key in hypeFramework.getAllContacts()) {
+            if(x.key in contactsList.keys) {
                 // I get the actual user here. Consider just passing that into the conversation instead of
                 // creating a brand new one
-                nickname = hypeFramework.getAllContacts()[x.key]!!.nickname
-                Log.d("ConversationListActivit", "Nickname is: $nickname")
+                nickname = contactsList[x.key]!!.nickname
+//                Log.d("ConversationListActivit", "Nickname is: $nickname")
             } else {
                 nickname = null
             }
-            mConversationList.add(Conversation(User(nickname, null, x.key), null, x.value, currentlyOnline))
+            mConversationList.add(Conversation(contactsList[x.key], null, x.value, currentlyOnline))
         }
         // Debugging
-        Log.d("ConversationListActivit", "populateConversationList() returned: ")
+//        Log.d("ConversationListActivit", "populateConversationList() returned: ")
         for(x in mConversationList) {
             Log.d("ConversationListActivit", "User nickname: ${x.user?.nickname}, User Identifier: ${x.user?.userIdentifier}, user online: ${x.currentlyOnline}")
         }

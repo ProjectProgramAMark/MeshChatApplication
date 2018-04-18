@@ -160,6 +160,11 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
     private fun getStore(): Store {
         val hypeFramework = applicationContext as HypeLifeCycle
         val userIdentifier = intent.getLongExtra("userIdentifier", 0)
+        Log.d("MessageListActivity", "Getting the store for specific user in messageListActivity's getStore() returns this: ${hypeFramework.getAllMessages()[userIdentifier]!!}")
+        Log.d("MessageListActivity", "The messages within the store for the aforementioned thing is: ")
+        for(x in hypeFramework.getAllMessages()[userIdentifier]!!.getMessages()) {
+            Log.d("MessageListActivity", x.first.data.toString(charset("UTF-8")))
+        }
         return hypeFramework.getAllMessages()[userIdentifier]!!
     }
 

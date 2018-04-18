@@ -99,7 +99,6 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
 
         internal var messageText: BubbleTextView = itemView.findViewById(R.id.bubbleTextView)
         internal var timeText: TextView = itemView.findViewById(R.id.text_message_time)
-        internal var nameText: TextView = itemView.findViewById(R.id.text_message_name)
         internal var profileImage: ImageView = itemView.findViewById(R.id.image_message_profile) as ImageView
 
         

@@ -13,6 +13,8 @@ import java.lang.ref.WeakReference
 import java.util.Vector
 
 class Store(val instance: Instance): Serializable {
+    // The Boolean in the Pair represents whether that message was sent from host or user
+    // true = sent from host (aka your message) false = sent from other user (the one you're chatting with)
     private var messages: Vector<Pair<Message, Boolean>> = Vector()
     var lastReadIndex: Int = 0
     private var delegateWeakReference: WeakReference<Delegate?>? = null
@@ -36,7 +38,6 @@ class Store(val instance: Instance): Serializable {
     // need the context in order to be able to access setAllOnlinePeers function which lives in HypeLifeCycle
     // because Stores is a singleton class
     fun add(message: Pair<Message, Boolean>, context: Context) {
-
         getMessages().add(message)
         val hypeFramework = context.applicationContext as HypeLifeCycle
          hypeFramework.setMessageDatabase(instance.userIdentifier, this)
@@ -60,7 +61,7 @@ class Store(val instance: Instance): Serializable {
             // this means there's no message at this index and therefore need to return null
             return null
         }
-        return messages[index].toString()
+        return messages[index].first.toString()
 
     }
 

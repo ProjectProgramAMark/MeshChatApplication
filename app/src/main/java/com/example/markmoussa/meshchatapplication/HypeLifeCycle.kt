@@ -7,11 +7,9 @@ package com.example.markmoussa.meshchatapplication
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.net.Uri
-import android.util.Base64
 import android.util.Log
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.hypelabs.hype.Error
 import com.hypelabs.hype.Hype
 import com.hypelabs.hype.Instance
@@ -20,26 +18,26 @@ import com.hypelabs.hype.MessageInfo
 import com.hypelabs.hype.MessageObserver
 import com.hypelabs.hype.NetworkObserver
 import com.hypelabs.hype.StateObserver
-import org.json.JSONObject
 import java.io.*
-import java.nio.charset.Charset
-import java.util.*
 import kotlin.collections.HashMap
 import kotlin.properties.Delegates
+import com.google.gson.reflect.TypeToken
 
 
 class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Application() {
 
     // TODO: DO THIS SECOND - Figure out why these observables aren't working sometimes (such as messageDatabase in setMessageDatabase()
-    // The onlinePeers object keeps track of message storage associated with each instance (peer)
+    // The onlinePeers object keeps track of message storage associated with each instance (peer) via their userIdentifiers
     private var onlinePeers: MutableList<Long> by Delegates.observable(mutableListOf()) {
         _, _, _ -> updateOnlinePeersFile()
     }
 
+    // The messageDatabase keeps track of the users and their previous messages via saving their userIdentifiers and a Store
     private var messageDatabase: HashMap<Long, Store> by Delegates.observable(hashMapOf()) {
         _, _, _ -> updateMessageDatabase()
     }
 
+    // contactsDatabase saves previously before seen users to save sending data back and forth via their userIdentifiers and User objects
     private var contactsDatabase: HashMap<Long, User> by Delegates.observable(hashMapOf()) {
         _, _, _ -> updateContactsDatabase()
     }
@@ -72,8 +70,9 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
     override fun onHypeStart() {
         Log.i(TAG, "Hype started!")
         Log.i(TAG, "Loading store from file")
-        readOnlinePeers()
-        readMessageDatabase()
+        onlinePeers = readOnlinePeers()
+        messageDatabase = readMessageDatabase()
+        contactsDatabase = readContactsDatabase()
     }
 
     override fun onHypeStop(error: Error?) {
@@ -189,8 +188,9 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
 
         // setting onlinePeers to read file here instead of at the top because readOnlinePeers() needs
         // dirPath in order to proceed, and dirPath is still null when onlinePeers is instantiated
-        onlinePeers = readOnlinePeers()
-        messageDatabase = readMessageDatabase()
+//        onlinePeers = readOnlinePeers()
+//        messageDatabase = readMessageDatabase()
+//        contactsDatabase = readContactsDatabase()
     }
 
     fun getAllOnlinePeers(): MutableList<Long> {
@@ -228,22 +228,30 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
         // TODO: Figure out why and delete manual call once fixed
         updateMessageDatabase()
         // debugging
-        Log.d("HypeLifeCycle ", "new messageDatabase (from file) is: ${messageDatabase.entries.toString()}")
+        Log.d("HypeLifeCycle ", "new messageDatabase (from variable) is: ${messageDatabase.entries.toString()}")
         for(x in messageDatabase.values) {
             for(y in x.getMessages()) {
-                Log.d("HypeLifeCycle", "Store contents (from new messageDatabase (from file)): ${y.first.data.toString(charset("UTF-8"))}")
+                Log.d("HypeLifeCycle", "Store contents (from new messageDatabase (from variable)): ${y.first.data.toString(charset("UTF-8"))}")
             }
         }
     }
 
     // adds contact to contactsDatabase and triggers updating the contacts file in memory
     fun setContactsDatabase(userIdentifier: Long, user: User) {
-        contactsDatabase[userIdentifier] = user
+        // TODO: Hackish fix since I can't send over userIdentifier without the bytes going over its limit
+        // Fix once Hype's SDK allows for greater than 255 bytes sent on announcement
+        val newUser = User(user.nickname, user.profileUri, userIdentifier)
+        contactsDatabase[userIdentifier] = newUser
+
+        // TODO: For some reason, observable delegate not calling updateContactsDatabase() when message database is changed
+        // TODO: Figure out why and delete manual call once fixed
+        updateContactsDatabase()
     }
 
     private fun readOnlinePeers(): MutableList<Long> {
         val storeFile = File(dirPath, "storeFile")
         if(!(storeFile.exists()) || storeFile.length() == 0.toLong()) {
+            Log.d("HypeLifeCycle", "File for online peers does not exist; creating new one (from read)")
             storeFile.createNewFile()
             return mutableListOf()
         } else {
@@ -266,6 +274,7 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
             val storeFile = File(dirPath, "storeFile")
             if(!(storeFile.exists())) {
                 storeFile.createNewFile()
+                Log.d("HypeLifeCycle", "File for online peers does not exist; creating new one (from update)")
             }
             val fos = FileOutputStream(storeFile)
             val oos = ObjectOutputStream(fos)
@@ -276,19 +285,35 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
         }
     }
 
+    inline fun <reified T> Gson.fromJson(json: String) = this.fromJson<T>(json, object: TypeToken<T>() {}.type)
     private fun readMessageDatabase(): HashMap<Long, Store> {
         val messageDatabaseFile = File(dirPath, "messageDatabase")
         if(!(messageDatabaseFile.exists()) || messageDatabaseFile.length() == 0.toLong()) {
             messageDatabaseFile.createNewFile()
+            if(!(messageDatabaseFile.exists())) {
+                Log.d("HypeLifeCycle", "File for message database does not exist; creating new one (from read)")
+            } else {
+                Log.d("HypeLifeCycle", "messageDatabaseFile.length() == 0")
+            }
             return hashMapOf()
         } else {
             try {
+//                val fis = FileInputStream(messageDatabaseFile)
+//                val ois = ObjectInputStream(fis)
+//                val result = ois.readObject() as HashMap<Long, Store>
+//                ois.close()
+
+                // Using GSON library instead of ObjectOutputStream for now because Instance (found in Store) is not Serializable at the moment
                 val fis = FileInputStream(messageDatabaseFile)
                 val ois = ObjectInputStream(fis)
-                val result = ois.readObject() as HashMap<Long, Store>
+                val jsonHashMapResult = ois.readObject().toString()
                 ois.close()
                 // debugging
+                Log.d("HypeLifeCycle", "jsonHashMapResult: $jsonHashMapResult")
+                val result: HashMap<Long, Store> = Gson().fromJson<HashMap<Long, Store>>(jsonHashMapResult)
+                // debugging
                 Log.d("HypeLifeCycle ", "reading messageDatabase (from file) is: ${result.entries.toString()}")
+
                 for(x in result.values) {
                     for(y in x.getMessages()) {
                         Log.d("HypeLifeCycle", "Store contents (from reading messageDatabase (from file)): ${y.first.data.toString(charset("UTF-8"))}")
@@ -310,16 +335,32 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
             val messageDatabaseFile = File(dirPath, "messageDatabase")
             if(!(messageDatabaseFile.exists())) {
                 messageDatabaseFile.createNewFile()
+                Log.d("HypeLifeCycle", "File for message database does not exist; creating new one (from update)")
             }
             // TODO: DO THIS FIRST - figure out how to serialize messageDatabase
             // TODO: since Instance from Hype SDK not serializable, it won't let me serialize all of messageDatabase
-            // by that logic, I should probably check up on contactsDatabase as well
+//            val fos = FileOutputStream(messageDatabaseFile)
+//            val oos = ObjectOutputStream(fos)
+//            oos.writeObject(messageDatabase)
+//            // debugging
+//            Log.d("HypeLifeCycle", "Right after writing the file, the new file is: ${readMessageDatabase()}")
+//            oos.close()
+
+            // Using GSON library instead of ObjectOutputStream for now because Instance (found in Store) is not Serializable at the moment
             val fos = FileOutputStream(messageDatabaseFile)
+            val gsonSerializer = Gson().toJson(messageDatabase)
             val oos = ObjectOutputStream(fos)
-            oos.writeObject(messageDatabase)
+            oos.writeObject(gsonSerializer)
             // debugging
-            Log.d("HypeLifeCycle", "Right after writing the file, the new file is: ${readMessageDatabase()}")
+            Log.d("HypeLifeCycle", "Right after writing the messageDatabase file, the new file is: ${readMessageDatabase()}")
+
+            // Checking if the file is empty, meaning the messageDatabase didn't write properly
+            // debugging
+            if(messageDatabaseFile.length() == 0.toLong()) {
+                Log.d("HypeLifeCycle", "The messageDatabaseFile is still empty after writing; this means there's a problem in updateMessageDatabase()")
+            }
             oos.close()
+
         } catch(e: Exception) {
             e.printStackTrace()
         }
@@ -329,6 +370,7 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
         val contactsFile = File(dirPath, "contactsFile")
         if(!(contactsFile.exists()) || contactsFile.length() == 0.toLong()) {
             contactsFile.createNewFile()
+            Log.d("HypeLifeCycle", "File for contacts database does not exist; creating new one (from read)")
             return hashMapOf()
         } else {
             try {
@@ -350,10 +392,12 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
             val contactsFile = File(dirPath, "contactsFile")
             if(!(contactsFile.exists())) {
                 contactsFile.createNewFile()
+                Log.d("HypeLifeCycle", "File for contacts database does not exist; creating new one (from update)")
             }
             val fos = FileOutputStream(contactsFile)
             val oos = ObjectOutputStream(fos)
             oos.writeObject(contactsDatabase)
+            Log.d("HypeLifeCycle", "Right after writing the contacts file, the new file is: ${readContactsDatabase()}")
             oos.close()
 
         } catch(e: Exception) {
@@ -368,8 +412,9 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
         setAllOnlinePeers(instance.userIdentifier, true)
         Log.d("HypeLifeCycle ", "New onlinePeers: " + getAllOnlinePeers().toString())
         if(getAllMessages()[instance.userIdentifier] == null) {
+            Log.d("HypeLifeCycle", "Could not find userIdentifier in getAllMessages() (aka messageDatabase), therefore starting a brand new Store")
             setMessageDatabase(instance.userIdentifier, Store(instance))
-            Log.d("HypeLifeCycle ", "New messageDatabase: " + getAllMessages().toString())
+            Log.d("HypeLifeCycle ", "New messageDatabase (from variable): " + getAllMessages().toString())
         }
         if(!(readContactsDatabase().containsKey(instance.userIdentifier))) {
             // restoring User object from serialized byteArray
@@ -380,11 +425,10 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
             // and adding the userIdentifier exceeds the limit)
             Log.d("HypeLifeCycle ", "NEWUSER OBJECT: ${newUser.toString()}")
             setContactsDatabase(instance.userIdentifier, newUser)
+        } else {
+            Log.d("HypeLifeCycle", "User recognized in ContactsDatabase, no need to set anything new")
         }
 
-//        // Notify the conversationList activity to refresh the UI
-//        val conversationListActivity = ConversationListActivity()
-//        conversationListActivity.notifyOnlinePeersChanged()
     }
 
     fun removeFromResolvedInstancesMap(instance: Instance) {

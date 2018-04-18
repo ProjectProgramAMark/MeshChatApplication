@@ -46,5 +46,8 @@ dependencies {
     kapt "android.arch.lifecycle:compiler:1.1.1"
     // Test helpers for LiveData
     testImplementation "android.arch.core:core-testing:1.1.1"
+    // For Bubbles that contain messages in MessageListActivity; remove when I create my own bubble
     implementation 'com.github.lguipeng:BubbleView:1.0.1'
+    // GSON library; remove when I can serialize Stores again (in updateMessageDatabase and readMessageDatabase)
+    implementation 'com.google.code.gson:gson:2.8.2'
 }
