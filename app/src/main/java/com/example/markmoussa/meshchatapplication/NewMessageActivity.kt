@@ -34,7 +34,7 @@ class NewMessageActivity : AppCompatActivity(), Store.Delegate {
                 Log.v(this@NewMessageActivity::class.simpleName, "Send Message")
                 val message = sendMessage(text, store.instance)
                 chatBox.setText("")
-                store.add(message, this)
+                store.add(Pair(message, true), this)
             } catch(e: UnsupportedEncodingException) {
                 e.printStackTrace()
             }
@@ -57,7 +57,7 @@ class NewMessageActivity : AppCompatActivity(), Store.Delegate {
         return Hype.send(data, instance, false)
     }
 
-    override fun onMessageAdded(store: Store, message: Message) {
+    override fun onMessageAdded(store: Store, message: Pair<Message, Boolean>) {
         this.runOnUiThread {
             val recyclerView = findViewById<RecyclerView>(R.id.recyclerview_message_list) as RecyclerView
 

@@ -66,7 +66,7 @@ class ConversationListAdapter(private val mContext: Context, private val mConver
             //timeText.text = DateUtils.formatDateTime(message.getCreatedAt(), HOUR_IN_MILLIS, FORMAT_SHOW_TIME)
             timestampText.text = Date().toString()
             // TODO: Figure out how to pull profile pic, or if not, then what profile pic should be (if there should be one at all)
-            if(conversation.user.profileUrl != null) {
+            if(conversation.user.profileUri != null) {
                 // do nothing
             }
             val hypeFramework = mContext.applicationContext as HypeLifeCycle

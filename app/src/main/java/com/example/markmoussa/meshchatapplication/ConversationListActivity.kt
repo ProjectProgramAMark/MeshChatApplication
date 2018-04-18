@@ -142,7 +142,7 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleO
     // TODO: Add option to delete conversation
 
 
-    override fun onMessageAdded(store: Store, message: Message) {
+    override fun onMessageAdded(store: Store, message: Pair<Message, Boolean>) {
         updateInterface()
 
     }

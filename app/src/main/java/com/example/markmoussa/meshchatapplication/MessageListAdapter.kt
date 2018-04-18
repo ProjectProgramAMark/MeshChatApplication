@@ -5,6 +5,7 @@ package com.example.markmoussa.meshchatapplication
  */
 
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.support.v7.widget.RecyclerView
 import android.text.format.DateUtils
 import android.text.format.DateUtils.*
@@ -20,7 +21,7 @@ import java.io.ByteArrayInputStream
 
 
 // BaseMessage is specific to SendBird, fix later
-class MessageListAdapter(private val mContext: Context, private val mMessageList: List<Message>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class MessageListAdapter(private val mContext: Context, private val mMessageList: List<Pair<Message, Boolean>>, private val profileUri: String?) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun getItemCount(): Int {
         return mMessageList.size
@@ -39,12 +40,7 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
         // SendBird function
         // message.getSender().getUserId().equals(SendBird.getCurrentUser().getUserId())
 
-        // TODO: Create logic for this
-//        val hypeFramework = mContext.applicationContext as HypeLifeCycle
-//        if(message.identifier.equals()) {
-//
-//        }
-        return if (true) {
+        return if (message.second) {
             // If the current user is the sender of the message
             VIEW_TYPE_MESSAGE_SENT
         } else {
@@ -79,14 +75,12 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
         val message = mMessageList[position]
 
         when (holder.itemViewType) {
-            VIEW_TYPE_MESSAGE_SENT -> (holder as SentMessageHolder).bind(message)
-            VIEW_TYPE_MESSAGE_RECEIVED -> (holder as ReceivedMessageHolder).bind(message)
+            VIEW_TYPE_MESSAGE_SENT -> (holder as SentMessageHolder).bind(message.first)
+            VIEW_TYPE_MESSAGE_RECEIVED -> (holder as ReceivedMessageHolder).bind(message.first)
         }
     }
 
     private inner class SentMessageHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        // debugging
-        //        internal var messageText: TextView = itemView.findViewById(R.id.text_message_body)
         internal var messageText: BubbleTextView = itemView.findViewById(R.id.bubbleTextView)
         internal var timeText: TextView = itemView.findViewById(R.id.text_message_time)
 
@@ -112,8 +106,13 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
         // UserMessage is specific to SendBird, fix later
 
         internal fun bind(message: Message) {
-            messageText.text = message.data.toString()
+            messageText.text = message.data.toString(charset("UTF-8"))
             Log.i("DEBUG ", "Message text from adapter: ${messageText.text}")
+            if(profileUri == null) {
+                profileImage.setImageResource(R.drawable.default_user_image)
+            } else {
+                profileImage.setImageBitmap(BitmapFactory.decodeFile(profileUri))
+            }
 
             // Format the stored timestamp into a readable String using method.
             // TODO: Replace HOUR_IN_MILLIS and FORMAT_SHOW_TIME to get metadata from Hype Messages
@@ -124,12 +123,12 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
 
             // TODO: Figure out how to do this without using SendBird
             // Insert the profile image from the URL into the ImageView.
-            // ImageUtils.displayRoundImageFromUrl(mContext, message.getSender().getProfileUrl(), profileImage)
+            // ImageUtils.displayRoundImageFromUrl(mContext, message.getSender().getProfileUri(), profileImage)
         }
     }
 
     companion object {
-        private val VIEW_TYPE_MESSAGE_SENT = 1
-        private val VIEW_TYPE_MESSAGE_RECEIVED = 2
+        private const val VIEW_TYPE_MESSAGE_SENT = 1
+        private const val VIEW_TYPE_MESSAGE_RECEIVED = 2
     }
 }

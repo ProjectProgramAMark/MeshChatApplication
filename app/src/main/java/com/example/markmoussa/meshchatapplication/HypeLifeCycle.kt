@@ -147,7 +147,7 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
             store = Store(instance)
         }
         // Storing the message triggers a reload update in the MessageList activity
-        store.add(message, this)
+        store.add(Pair(message, false), this)
         setMessageDatabase(instance.userIdentifier, store)
 
     }
@@ -231,7 +231,7 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
         Log.d("HypeLifeCycle ", "new messageDatabase (from file) is: ${messageDatabase.entries.toString()}")
         for(x in messageDatabase.values) {
             for(y in x.getMessages()) {
-                Log.d("HypeLifeCycle", "Store contents (from new messageDatabase (from file)): ${y.data.toString(charset("UTF-8"))}")
+                Log.d("HypeLifeCycle", "Store contents (from new messageDatabase (from file)): ${y.first.data.toString(charset("UTF-8"))}")
             }
         }
     }
@@ -291,7 +291,7 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
                 Log.d("HypeLifeCycle ", "reading messageDatabase (from file) is: ${result.entries.toString()}")
                 for(x in result.values) {
                     for(y in x.getMessages()) {
-                        Log.d("HypeLifeCycle", "Store contents (from reading messageDatabase (from file)): ${y.data.toString(charset("UTF-8"))}")
+                        Log.d("HypeLifeCycle", "Store contents (from reading messageDatabase (from file)): ${y.first.data.toString(charset("UTF-8"))}")
                     }
                 }
                 return result

@@ -18,29 +18,36 @@ import java.io.UnsupportedEncodingException
 
 class MessageListActivity : AppCompatActivity(), Store.Delegate {
 
-    private var mMessageList: MutableList<Message> = mutableListOf()
+    private var mMessageList: MutableList<Pair<Message, Boolean>> = mutableListOf()
     private lateinit var mMessageAdapter: MessageListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_message_list)
 
-        mMessageAdapter = MessageListAdapter(this, mMessageList)
+        val hypeFramework = applicationContext as HypeLifeCycle
+        val userIdentifier = intent.getLongExtra("userIdentifier", 0)
+        val contactsList = hypeFramework.getAllContacts()
+        // Setting profileUri to default user image in case it doesn't exist
+        // TODO: This way of setting the default profile pic might not be the best but it works; look into making more efficient later
+        var profileUri: String? = "/Users/markmoussa/AndroidStudioProjects/MeshChatApplication/app/src/main/res/drawable/default_user_image.png"
+        // Setting actionbar with name of user and getting profile pic path
+        if(userIdentifier != 0.toLong()) {
+            if(userIdentifier in contactsList) {
+                val actionBar = supportActionBar
+                actionBar!!.title = contactsList[userIdentifier]!!.nickname
+
+                profileUri = contactsList[userIdentifier]?.profileUri
+            }
+        }
+        mMessageAdapter = MessageListAdapter(this, mMessageList, profileUri)
         var mMessageRecycler: RecyclerView? = null
-        mMessageRecycler = findViewById<RecyclerView>(R.id.recyclerview_message_list) as RecyclerView
+        mMessageRecycler = findViewById(R.id.recyclerview_message_list)
         mMessageRecycler.layoutManager = LinearLayoutManager(this)
         mMessageRecycler.adapter = mMessageAdapter
         // getting the messages
         notifyMessageListChanged()
-        val hypeFramework = applicationContext as HypeLifeCycle
-        val userIdentifier = intent.getLongExtra("userIdentifier", 0)
-        // Setting actionbar with name of user
-        if(userIdentifier != 0.toLong()) {
-            if(userIdentifier in hypeFramework.getAllContacts()) {
-                val actionBar = supportActionBar
-                actionBar!!.title = hypeFramework.getAllContacts()[userIdentifier]!!.nickname
-            }
-        }
+
 
         // hackish fix at the messages not appearing when notifyDataSetChanged() called. Need to fix later
         // also need to fix same thing for ConversationListActivity
@@ -63,7 +70,7 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
             // debugging
             Log.d("MessageListActivity ", "Store is this: ")
             for(x in store.getMessages()) {
-                Log.i("DBEUG", x.data.toString())
+                Log.i("DBEUG", x.first.data.toString())
             }
             store.delegate = this
             store.lastReadIndex = store.getMessages().size
@@ -86,11 +93,11 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
                     Log.v(this@MessageListActivity::class.simpleName, "Send Message")
                     val message = sendMessage(text, store.instance)
                     chatBox.setText("")
-                    store.add(message, this)
+                    store.add(Pair(message, true), this)
                     // debugging
                     Log.d("MessageListActivity ", "Updated store is this: ")
                     for(x in store.getMessages()) {
-                        Log.d("MessageListActivity", x.data.toString(charset("UTF-8")))
+                        Log.d("MessageListActivity", x.first.data.toString(charset("UTF-8")))
                     }
                 } catch(e: UnsupportedEncodingException) {
                     e.printStackTrace()
@@ -107,7 +114,7 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
         Log.d("MessageListActivity: ", "populateMessageList() returned: ")
         if(!(mMessageList.isEmpty())) {
             for(x in mMessageList) {
-                Log.d("MessageListActivity", "message: ${x.data.toString(charset("UTF-8"))}")
+                Log.d("MessageListActivity", "message: ${x.first.data.toString(charset("UTF-8"))}")
             }
         } else {
             Log.d("MessageListActivity ", "Message List is empty at the moment")
@@ -136,7 +143,7 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
         return Hype.send(data, instance, true)
     }
 
-    override fun onMessageAdded(store: Store, message: Message) {
+    override fun onMessageAdded(store: Store, message: Pair<Message, Boolean>) {
         Log.v("ONMESSAGEADDED: ", "onMessageAdded called in MessageListActivity")
         notifyMessageListChanged()
     }

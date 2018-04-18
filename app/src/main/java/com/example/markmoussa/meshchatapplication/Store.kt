@@ -13,7 +13,7 @@ import java.lang.ref.WeakReference
 import java.util.Vector
 
 class Store(val instance: Instance): Serializable {
-    private var messages: Vector<Message> = Vector()
+    private var messages: Vector<Pair<Message, Boolean>> = Vector()
     var lastReadIndex: Int = 0
     private var delegateWeakReference: WeakReference<Delegate?>? = null
 
@@ -26,7 +26,7 @@ class Store(val instance: Instance): Serializable {
 
     interface Delegate {
 
-        fun onMessageAdded(store: Store, message: Message)
+        fun onMessageAdded(store: Store, message: Pair<Message, Boolean>)
     }
 
     init {
@@ -35,7 +35,7 @@ class Store(val instance: Instance): Serializable {
 
     // need the context in order to be able to access setAllOnlinePeers function which lives in HypeLifeCycle
     // because Stores is a singleton class
-    fun add(message: Message, context: Context) {
+    fun add(message: Pair<Message, Boolean>, context: Context) {
 
         getMessages().add(message)
         val hypeFramework = context.applicationContext as HypeLifeCycle
@@ -46,7 +46,7 @@ class Store(val instance: Instance): Serializable {
 
     }
 
-    fun getMessages(): Vector<Message> {
+    fun getMessages(): Vector<Pair<Message, Boolean>> {
         return messages
     }
 
@@ -65,7 +65,7 @@ class Store(val instance: Instance): Serializable {
     }
 
     fun getMessageAtIndex(index: Int): Message {
-        return messages[index]
+        return messages[index].first
     }
 
     // TODO: write a function to update the stores value's last read index (here and in HypeLifeCycle)
