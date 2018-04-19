@@ -21,6 +21,7 @@ class LifecycleObserverActivity(context: Context) : LifecycleObserver {
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     fun onAppForegrounded() {
         Log.i("DEBUG ", "ON APP FOREGROUNDED CALLED")
+        isAppInForeground = true
         // Don't want to start Hype immediately if it's their first time opening the app (because they need to sign up first)
         val sharedPreferences: SharedPreferences = mContext.getSharedPreferences("sp", Context.MODE_PRIVATE)
         if(sharedPreferences.contains("USERNAME") && sharedPreferences.getString("USERNAME", null).isNotEmpty()) {

@@ -60,7 +60,7 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
 //        Hype.setAppIdentifier("f370ac17")
 
         // MeshNetworkApplication
-//         Hype.setAppIdentifier("9a96baaa")
+         Hype.setAppIdentifier("9a96baaa")
 
         // MeshNetworkApp2
 //        Hype.setAppIdentifier("b056a7af")
@@ -72,7 +72,16 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
 //        Hype.setAppIdentifier("ba3ae1ae")
 
         //MeshNetworkApplication5
-        Hype.setAppIdentifier("9cb5496c")
+//        Hype.setAppIdentifier("9cb5496c")
+
+        // PleaseWork
+//        Hype.setAppIdentifier("f26a3372")
+
+        // PleaseIBegYou
+//        Hype.setAppIdentifier("ad9b29f5")
+
+        //ChatAppEgyptianMarkos
+//        Hype.setAppIdentifier("aba7c2aa")
 
         val sharedPreferences: SharedPreferences = applicationContext.getSharedPreferences("sp", Context.MODE_PRIVATE)
         val userIdentifier = sharedPreferences.getInt("USER_IDENTIFIER", Hype.DefaultUserIdentifier)
@@ -202,7 +211,7 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
 //        return "903cbdd53f59e2f771cbf2a9429c91"
 
         // MeshNetworkApplication
-//        return "4e5936b294a88cf2"
+        return "4e5936b294a88cf2"
 
         // MeshNetworkApp2
 //        return "4e5936b294a88cf2"
@@ -214,7 +223,16 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
 //        return "bf80129c2ae5e7df"
 
         // MeshNetworkApplication5
-        return "9f05c13eb9276473"
+//        return "9f05c13eb9276473"
+
+        // PleaseWork
+//        return "bf80129c2ae5e7df"
+
+        // PleaseIBegYou
+//        return "bf80129c2ae5e7df"
+
+        //ChatAppEgyptianMarkos
+        return "bf80129c2ae5e7df"
     }
 
     override fun onCreate() {

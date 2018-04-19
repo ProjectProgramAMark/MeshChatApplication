@@ -48,6 +48,7 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
         mMessageRecycler.adapter = mMessageAdapter
         // getting the messages
         notifyMessageListChanged()
+        mMessageRecycler.scrollToPosition(mMessageList.size - 1)
 
 
         // hackish fix at the messages not appearing when notifyDataSetChanged() called. Need to fix later
@@ -68,10 +69,10 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
         if(userIdentifier in hypeFramework.getAllMessages()) {
             val store = getStore()
             // debugging
-            Log.d("MessageListActivity ", "Store is this: ")
-            for(x in store.getMessages()) {
-                Log.i("DEBUG", x.first)
-            }
+//            Log.d("MessageListActivity ", "Store is this: ")
+//            for(x in store.getMessages()) {
+//                Log.i("DEBUG", x.first)
+//            }
             store.delegate = this
             store.lastReadIndex = store.getMessages().size
 
