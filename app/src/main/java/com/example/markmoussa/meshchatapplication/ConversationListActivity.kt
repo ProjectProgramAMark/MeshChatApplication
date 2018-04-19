@@ -4,9 +4,7 @@ package com.example.markmoussa.meshchatapplication
  * Created by markmoussa on 2/24/18.
  */
 
-import android.arch.lifecycle.Lifecycle
 import android.arch.lifecycle.LifecycleObserver
-import android.arch.lifecycle.OnLifecycleEvent
 import android.arch.lifecycle.ProcessLifecycleOwner
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
@@ -25,7 +23,7 @@ import com.hypelabs.hype.Message
 class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleObserver {
 
     var mConversationList: MutableList<Conversation> = mutableListOf()
-    lateinit var lifeCycleObserver: LifecycleObserverActivity
+    private lateinit var lifeCycleObserver: LifecycleObserverActivity
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,13 +31,14 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleO
 
         val hypeFramework = applicationContext as HypeLifeCycle
 
+        // This tells us
         ProcessLifecycleOwner.get().lifecycle.addObserver(LifecycleObserverActivity(this).also { lifeCycleObserver = it})
 
         populateConversationList()
 
         var mConversationListRecycler: RecyclerView? = null
         var mConversationListAdapter: ConversationListAdapter? = null
-        mConversationListRecycler = findViewById<RecyclerView>(R.id.reyclerview_conversation_list)
+        mConversationListRecycler = findViewById(R.id.reyclerview_conversation_list)
         mConversationListRecycler!!.layoutManager = LinearLayoutManager(this)
         mConversationListAdapter = ConversationListAdapter(this, mConversationList)
         mConversationListRecycler.adapter = mConversationListAdapter
@@ -55,7 +54,7 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleO
                 contactStore?.delegate = this@ConversationListActivity
                 val intent = Intent(this@ConversationListActivity, MessageListActivity::class.java)
                 intent.putExtra("userIdentifier", userIdentifier)
-                if(userIdentifier in hypeFramework.getAllOnlinePeers()) {
+                if(userIdentifier in hypeFramework.getOnlinePeers()) {
                     intent.putExtra("online", true)
                 } else {
                     intent.putExtra("online", false)
@@ -96,22 +95,36 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleO
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_conversation_list, menu)
-        return true
-    }
+//    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+//        menuInflater.inflate(R.menu.menu_conversation_list, menu)
+//        return true
+//    }
+//
+//    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+//        when(item!!.itemId) {
+//            R.id.newMessageMenuButton -> {
+//                val intent = Intent(this, NewMessageActivity::class.java)
+//                startActivity(intent)
+//                return true
+//            }
+//            else -> return super.onOptionsItemSelected(item)
+//        }
+//    }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when(item!!.itemId) {
-            R.id.newMessageMenuButton -> {
-                val intent = Intent(this, NewMessageActivity::class.java)
-                startActivity(intent)
-                return true
-            }
-            else -> return super.onOptionsItemSelected(item)
+    // This function initializes conversation list for the first time.
+    // Making separate function because this one returns the list, populateConversationList
+    // modifies it (so that the changes can be detected by the adapter)
+    private fun initializeConversationList(): MutableList<Conversation> {
+        val hypeFramework = applicationContext as HypeLifeCycle
+        val messageList = hypeFramework.getAllMessages()
+        val contactsList = hypeFramework.getAllContacts()
+        val onlinePeers = hypeFramework.getOnlinePeers()
+        val conversationList = mutableListOf<Conversation>()
+        for(x in messageList) {
+            conversationList.add(Conversation(contactsList[x.key], null, x.value, if(contactsList.containsKey(x.key)) onlinePeers[x.key] else null, onlinePeers.containsKey(x.key)))
         }
+        return conversationList
     }
-
 
     private fun populateConversationList() {
         // creating conversations list
@@ -119,18 +132,20 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleO
         val hypeFramework = applicationContext as HypeLifeCycle
         var currentlyOnline: Boolean
         val contactsList = hypeFramework.getAllContacts()
+        val onlinePeers = hypeFramework.getOnlinePeers()
+        Log.d("ConversationListActivit", "Length of hypeFramework.getAllMessages(): ${hypeFramework.getAllMessages().size}")
         for(x in hypeFramework.getAllMessages()) {
-            currentlyOnline = x.key in hypeFramework.getAllOnlinePeers()
-            val nickname: String?
-            if(x.key in contactsList.keys) {
-                // I get the actual user here. Consider just passing that into the conversation instead of
-                // creating a brand new one
-                nickname = contactsList[x.key]!!.nickname
-//                Log.d("ConversationListActivit", "Nickname is: $nickname")
-            } else {
-                nickname = null
-            }
-            mConversationList.add(Conversation(contactsList[x.key], null, x.value, currentlyOnline))
+            currentlyOnline = onlinePeers.containsKey(x.key)
+//            val nickname: String?
+//            if(contactsList.containsKey(x.key)) {
+//                // I get the actual user here. Consider just passing that into the conversation instead of
+//                // creating a brand new one
+//                nickname = contactsList[x.key]!!.nickname
+////                Log.d("ConversationListActivit", "Nickname is: $nickname")
+//            } else {
+//                nickname = null
+//            }
+            mConversationList.add(Conversation(contactsList[x.key], null, x.value, if(currentlyOnline) onlinePeers[x.key] else null, currentlyOnline))
         }
         // Debugging
 //        Log.d("ConversationListActivit", "populateConversationList() returned: ")
@@ -143,7 +158,7 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleO
     // TODO: Add option to delete conversation
 
 
-    override fun onMessageAdded(store: Store, message: Pair<Message, Boolean>) {
+    override fun onMessageAdded(store: Store, message: Pair<String, Boolean>) {
         updateInterface()
 
     }

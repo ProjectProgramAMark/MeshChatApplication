@@ -5,19 +5,28 @@ package com.example.markmoussa.meshchatapplication
 // link: https://github.com/Hype-Labs/HypeChatDemo.android
 
 import android.content.Context
+import com.google.gson.*
 import com.hypelabs.hype.Instance
 import com.hypelabs.hype.Message
+import org.json.JSONObject
 import java.io.Serializable
 
 import java.lang.ref.WeakReference
+import java.lang.reflect.Type
 import java.util.Vector
 
-class Store(val instance: Instance): Serializable {
+class Store(@Transient val instance: Instance, val userIdentifier: Long): Serializable {
+
+
     // The Boolean in the Pair represents whether that message was sent from host or user
     // true = sent from host (aka your message) false = sent from other user (the one you're chatting with)
-    private var messages: Vector<Pair<Message, Boolean>> = Vector()
+    // The first value, String, used to be Hype Message object, but since it's not serializable for now
+    // I have to replace it with simply the text, since that means Message cannot be saved to a file
+    private var messages: Vector<Pair<String, Boolean>> = Vector()
     var lastReadIndex: Int = 0
-    private var delegateWeakReference: WeakReference<Delegate?>? = null
+    // Just a hotfix, and have no idea how this will affect the program
+    // but going to make WeakReference transient
+    @Transient private var delegateWeakReference: WeakReference<Delegate?>? = null
 
     var delegate: Delegate?
         get() = if (delegateWeakReference != null) delegateWeakReference!!.get() else null
@@ -28,26 +37,26 @@ class Store(val instance: Instance): Serializable {
 
     interface Delegate {
 
-        fun onMessageAdded(store: Store, message: Pair<Message, Boolean>)
+        fun onMessageAdded(store: Store, message: Pair<String, Boolean>)
     }
 
     init {
         this.lastReadIndex = 0
     }
 
-    // need the context in order to be able to access setAllOnlinePeers function which lives in HypeLifeCycle
+    // need the context in order to be able to access setMessageDatabase function which lives in HypeLifeCycle
     // because Stores is a singleton class
-    fun add(message: Pair<Message, Boolean>, context: Context) {
+    fun add(message: Pair<String, Boolean>, context: Context) {
         getMessages().add(message)
         val hypeFramework = context.applicationContext as HypeLifeCycle
-         hypeFramework.setMessageDatabase(instance.userIdentifier, this)
+         hypeFramework.setMessageDatabase(userIdentifier, this)
         val delegate = delegate
 
         delegate?.onMessageAdded(this, message)
 
     }
 
-    fun getMessages(): Vector<Pair<Message, Boolean>> {
+    fun getMessages(): Vector<Pair<String, Boolean>> {
         return messages
     }
 
@@ -65,7 +74,7 @@ class Store(val instance: Instance): Serializable {
 
     }
 
-    fun getMessageAtIndex(index: Int): Message {
+    fun getMessageAtIndex(index: Int): String {
         return messages[index].first
     }
 

@@ -7,6 +7,7 @@ package com.example.markmoussa.meshchatapplication
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.widget.SwipeRefreshLayout
+import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -18,7 +19,7 @@ import java.io.UnsupportedEncodingException
 
 class MessageListActivity : AppCompatActivity(), Store.Delegate {
 
-    private var mMessageList: MutableList<Pair<Message, Boolean>> = mutableListOf()
+    private var mMessageList: MutableList<Pair<String, Boolean>> = mutableListOf()
     private lateinit var mMessageAdapter: MessageListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,13 +71,13 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
             // debugging
             Log.d("MessageListActivity ", "Store is this: ")
             for(x in store.getMessages()) {
-                Log.i("DBEUG", x.first.data.toString())
+                Log.i("DEBUG", x.first)
             }
             store.delegate = this
             store.lastReadIndex = store.getMessages().size
 
-            val chatBox = findViewById<EditText>(R.id.edittext_chatbox) as EditText
-            val sendButton = findViewById<Button>(R.id.button_chatbox_send) as Button
+            val chatBox = findViewById<EditText>(R.id.edittext_chatbox)
+            val sendButton = findViewById<Button>(R.id.button_chatbox_send)
 
             if(!(intent.getBooleanExtra("online", true))) {
                 chatBox.isEnabled = false
@@ -91,13 +92,26 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
                 }
                 try {
                     Log.v(this@MessageListActivity::class.simpleName, "Send Message")
-                    val message = sendMessage(text, store.instance)
-                    chatBox.setText("")
-                    store.add(Pair(message, true), this)
-                    // debugging
-                    Log.d("MessageListActivity ", "Updated store is this: ")
-                    for(x in store.getMessages()) {
-                        Log.d("MessageListActivity", x.first.data.toString(charset("UTF-8")))
+                    // Sending message via Hype
+                    val onlinePeers = hypeFramework.getOnlinePeers()
+                    if(onlinePeers.containsKey(userIdentifier)) {
+                        sendMessage(text, onlinePeers[userIdentifier]!!)
+                        chatBox.setText("")
+                        store.add(Pair(text, true), this)
+                        // debugging
+                        Log.d("MessageListActivity ", "Updated store is this: ")
+                        for(x in store.getMessages()) {
+                            Log.d("MessageListActivity", x.first)
+                        }
+                    } else {
+                        // Alert the user that message cannot be sent (because onlinePeers does not have the Instance of the user)
+                        val builder = AlertDialog.Builder(this@MessageListActivity)
+                        builder.setMessage("Message cannot be sent to user at this time (they have likely just gone offline)")
+                        builder.setPositiveButton("OK", {
+                            _, _ ->  return@setPositiveButton
+                        })
+                        val dialog = builder.create()
+                        dialog.show()
                     }
                 } catch(e: UnsupportedEncodingException) {
                     e.printStackTrace()
@@ -114,7 +128,7 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
         Log.d("MessageListActivity: ", "populateMessageList() returned: ")
         if(!(mMessageList.isEmpty())) {
             for(x in mMessageList) {
-                Log.d("MessageListActivity", "message: ${x.first.data.toString(charset("UTF-8"))}")
+                Log.d("MessageListActivity", "message: ${x.first}")
             }
         } else {
             Log.d("MessageListActivity ", "Message List is empty at the moment")
@@ -143,7 +157,7 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
         return Hype.send(data, instance, true)
     }
 
-    override fun onMessageAdded(store: Store, message: Pair<Message, Boolean>) {
+    override fun onMessageAdded(store: Store, message: Pair<String, Boolean>) {
         Log.v("ONMESSAGEADDED: ", "onMessageAdded called in MessageListActivity")
         notifyMessageListChanged()
     }
@@ -160,10 +174,8 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
     private fun getStore(): Store {
         val hypeFramework = applicationContext as HypeLifeCycle
         val userIdentifier = intent.getLongExtra("userIdentifier", 0)
-        Log.d("MessageListActivity", "Getting the store for specific user in messageListActivity's getStore() returns this: ${hypeFramework.getAllMessages()[userIdentifier]!!}")
-        Log.d("MessageListActivity", "The messages within the store for the aforementioned thing is: ")
         for(x in hypeFramework.getAllMessages()[userIdentifier]!!.getMessages()) {
-            Log.d("MessageListActivity", x.first.data.toString(charset("UTF-8")))
+            Log.d("MessageListActivity", x.first)
         }
         return hypeFramework.getAllMessages()[userIdentifier]!!
     }

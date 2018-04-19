@@ -70,7 +70,7 @@ class ConversationListAdapter(private val mContext: Context, private val mConver
                 // do nothing
             }
             val hypeFramework = mContext.applicationContext as HypeLifeCycle
-            if(conversation.user.userIdentifier in hypeFramework.getAllOnlinePeers()) {
+            if(conversation.user.userIdentifier in hypeFramework.getOnlinePeers()) {
                 onlineStatusIcon.setImageResource(android.R.drawable.presence_online)
             } else {
                 onlineStatusIcon.setImageResource(android.R.drawable.presence_offline)

@@ -21,7 +21,7 @@ import java.io.ByteArrayInputStream
 
 
 // BaseMessage is specific to SendBird, fix later
-class MessageListAdapter(private val mContext: Context, private val mMessageList: List<Pair<Message, Boolean>>, private val profileUri: String?) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class MessageListAdapter(private val mContext: Context, private val mMessageList: List<Pair<String, Boolean>>, private val profileUri: String?) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun getItemCount(): Int {
         return mMessageList.size
@@ -85,8 +85,8 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
         internal var timeText: TextView = itemView.findViewById(R.id.text_message_time)
 
         // UserMessage is specific to SendBird, fix later
-        internal fun bind(message: Message) {
-            messageText.text = message.data.toString(charset("UTF-8"))
+        internal fun bind(message: String) {
+            messageText.text = message
             Log.i("DEBUG ", "Message text from adapter: ${messageText.text}")
 
             // Format the stored timestamp into a readable String using method.
@@ -104,8 +104,8 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
         
         // UserMessage is specific to SendBird, fix later
 
-        internal fun bind(message: Message) {
-            messageText.text = message.data.toString(charset("UTF-8"))
+        internal fun bind(message: String) {
+            messageText.text = message
             Log.i("DEBUG ", "Message text from adapter: ${messageText.text}")
             if(profileUri == null) {
                 profileImage.setImageResource(R.drawable.default_user_image)

@@ -43,7 +43,6 @@
         <activity android:name=".SignUpActivity" />
         <activity android:name=".MessageListActivity" />
         <activity android:name=".ConversationListActivity" />
-        <activity android:name=".NewMessageActivity"></activity>
     </application>
 
 </manifest>
