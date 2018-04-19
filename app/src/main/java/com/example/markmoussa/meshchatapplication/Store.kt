@@ -5,6 +5,7 @@ package com.example.markmoussa.meshchatapplication
 // link: https://github.com/Hype-Labs/HypeChatDemo.android
 
 import android.content.Context
+import android.util.Log
 import java.io.Serializable
 import java.lang.ref.WeakReference
 import java.util.Vector
@@ -60,11 +61,12 @@ class Store(val userIdentifier: Long): Serializable {
     }
 
     fun getMessageStringAtIndex(index: Int): String? {
-        if(messages.isEmpty() || messages!!.size >= index) {
+        if(messages.isEmpty() || messages!!.size < index) {
+            Log.d("Store", "this was activated")
             // this means there's no message at this index and therefore need to return null
             return null
         }
-        return messages[index].first.toString()
+        return messages[index].first
 
     }
 

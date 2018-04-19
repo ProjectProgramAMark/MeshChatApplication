@@ -2,6 +2,7 @@ package com.example.markmoussa.meshchatapplication
 
 import android.content.Context
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -57,8 +58,13 @@ class ConversationListAdapter(private val mContext: Context, private val mConver
              } else {
                  usernameText.text = conversation.user.userIdentifier.toString()
              }
-            if(conversation.messageList != null) {
-                messagePreviewText.text = conversation.messageList.getMessageStringAtIndex(conversation.messageList.lastReadIndex)
+            if(!(conversation.messageList?.getMessages()!!.isEmpty())) {
+
+                var messagePreview = conversation.messageList.getMessageStringAtIndex(conversation.messageList.getMessages().size - 1)
+                if(!(messagePreview.isNullOrEmpty()) && messagePreview!!.length > 40) {
+                    messagePreview = messagePreview.substring(0, 33) + "..."
+                }
+                messagePreviewText.text = messagePreview
             } else {
                 messagePreviewText.text = ""
             }
