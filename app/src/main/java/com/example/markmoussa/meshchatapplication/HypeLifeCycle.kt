@@ -4,9 +4,12 @@ package com.example.markmoussa.meshchatapplication
 // ALL CREDIT FOR THIS FILE GOES DIRECTLY TO HYPELABS
 // link: https://github.com/Hype-Labs/HypeChatDemo.android
 
-import android.app.Application
+import android.app.*
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Build
+import android.support.v4.app.NotificationCompat
 import android.util.Log
 import com.hypelabs.hype.Error
 import com.hypelabs.hype.Hype
@@ -19,6 +22,8 @@ import com.hypelabs.hype.StateObserver
 import java.io.*
 import kotlin.collections.HashMap
 import kotlin.properties.Delegates
+
+
 
 
 class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Application() {
@@ -58,7 +63,8 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
         // Hype.setAppIdentifier("9a96baaa")
 
         // MeshNetworkApp2
-        Hype.setAppIdentifier("b056a7af")
+//        Hype.setAppIdentifier("b056a7af")
+
         val sharedPreferences: SharedPreferences = applicationContext.getSharedPreferences("sp", Context.MODE_PRIVATE)
         val userIdentifier = sharedPreferences.getInt("USER_IDENTIFIER", Hype.DefaultUserIdentifier)
         Hype.setUserIdentifier(userIdentifier)
@@ -155,6 +161,7 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
         // Storing the message triggers a reload update in the MessageList activity
         store.add(Pair(message.data.toString(charset("UTF-8")), false), this)
         setMessageDatabase(instance.userIdentifier, store)
+        sendNotification(message, instance)
 
     }
 
@@ -181,14 +188,15 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
 
     override fun onHypeRequestAccessToken(i: Int): String {
         // Access the app settings (https://hypelabs.io/apps/) to find an access token to use here.
+
         // This one is for chatApplication
-//        return "903cbdd53f59e2f771cbf2a9429c91"
+        return "903cbdd53f59e2f771cbf2a9429c91"
 
         // MeshNetworkApplication
 //        return "4e5936b294a88cf2"
 
         // MeshNetworkApp2
-        return "4e5936b294a88cf2"
+//        return "4e5936b294a88cf2"
     }
 
     override fun onCreate() {
@@ -404,6 +412,40 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
         // Notify the conversationList activity to refresh the UI
 //        val conversationListActivity = ConversationListActivity()
 //        conversationListActivity.notifyOnlinePeersChanged()
+    }
+
+    private fun sendNotification(message: Message, instance: Instance) {
+        if(!(LifecycleObserverActivity.isAppInForeground)) {
+            val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            if(Build.VERSION.SDK_INT >= 26) {
+                val notificationChannel = NotificationChannel("hypeMessageReceived", "Message Received", NotificationManager.IMPORTANCE_DEFAULT)
+                notificationManager.createNotificationChannel(notificationChannel)
+            }
+            // change messageReceivedNotificationID to something more robust in the future
+            val messageReceivedNotificationID = 1234321
+            val notificationBuilder = NotificationCompat.Builder(applicationContext, "hypeMessageReceived")
+
+            var contentText: String? = message.data.toString(charset("UTF-8"))
+
+            if(message.data.toString(charset("UTF-8")).length > 25) {
+                contentText = message.data.toString(charset("UTF-8")).substring(0, 25) + "..."
+            }
+            val nickname = getAllContacts()[instance.userIdentifier]?.nickname
+            val contentTitle: String? = if(nickname.isNullOrEmpty()) instance.userIdentifier.toString() else nickname
+            val notification = notificationBuilder.setAutoCancel(true)
+                    .setDefaults(Notification.DEFAULT_ALL)
+                    .setWhen(System.currentTimeMillis())
+                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setTicker("New message received!")
+                    .setContentTitle(contentTitle)
+                    .setContentText(contentText)
+
+            val intent = Intent(this, MessageListActivity::class.java)
+            intent.putExtra("userIdentifier", instance.userIdentifier)
+            val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+            notification.setContentIntent(pendingIntent)
+            notificationManager.notify(messageReceivedNotificationID, notificationBuilder.build())
+        }
     }
 
     companion object {

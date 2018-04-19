@@ -26,19 +26,26 @@ class LifecycleObserverActivity(context: Context) : LifecycleObserver {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     fun onAppBackgrounded() {
-        Log.i("DEBUG ", "ON APP BACKGROUNDED CALLED")
+//        Log.i("DEBUG ", "ON APP BACKGROUNDED CALLED")
 
+        isAppInForeground = false
         // Commenting this out because if Hype stops when app backgrounded, messages would only get sent
         // when the user has the app open
-         val hypeFramework = mContext as HypeLifeCycle
-         hypeFramework.requestHypeToStop()
+//         val hypeFramework = mContext as HypeLifeCycle
+//         hypeFramework.requestHypeToStop()
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     fun onAppDestroyed() {
+        Log.i("DEBUG ", "ON APP DESTROYED CALLED")
+        isAppInForeground = false
         // Commenting this part out for demo tomorrow
-//        val hypeFramework = mContext as HypeLifeCycle
-//        hypeFramework.requestHypeToStop()
+        val hypeFramework = mContext as HypeLifeCycle
+        hypeFramework.requestHypeToStop()
+    }
+
+    companion object {
+        var isAppInForeground: Boolean = true
     }
 
 

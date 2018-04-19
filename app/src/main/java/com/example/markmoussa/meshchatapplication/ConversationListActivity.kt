@@ -135,7 +135,6 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleO
         var currentlyOnline: Boolean
         val contactsList = hypeFramework.getAllContacts()
         val onlinePeers = hypeFramework.getOnlinePeers()
-        Log.d("ConversationListActivit", "Length of hypeFramework.getAllMessages(): ${hypeFramework.getAllMessages().size}")
         for(x in hypeFramework.getAllMessages()) {
             currentlyOnline = onlinePeers.containsKey(x.key)
 //            val nickname: String?

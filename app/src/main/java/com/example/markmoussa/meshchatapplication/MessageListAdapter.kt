@@ -76,7 +76,6 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
         // UserMessage is specific to SendBird, fix later
         internal fun bind(message: String) {
             messageText.text = message
-            Log.i("DEBUG ", "Message text from adapter: ${messageText.text}")
 
             // Format the stored timestamp into a readable String using method.
             // Utils specific to SendBird, fix later
@@ -92,7 +91,6 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
 
         internal fun bind(message: String) {
             messageText.text = message
-            Log.i("DEBUG ", "Message text from adapter: ${messageText.text}")
             if(profileUri == null) {
                 profileImage.setImageResource(R.drawable.default_user_image)
             } else {
