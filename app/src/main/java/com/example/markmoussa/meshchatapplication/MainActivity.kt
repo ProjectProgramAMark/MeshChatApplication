@@ -5,7 +5,9 @@ package com.example.markmoussa.meshchatapplication
  */
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -31,6 +33,12 @@ class MainActivity : AppCompatActivity() {
         val continueButton = findViewById<Button>(R.id.continueButton) as Button
         continueButton.setOnClickListener {
             val intent = Intent(this, SignUpActivity::class.java)
+            startActivity(intent)
+        }
+
+        val sharedPreferences: SharedPreferences = applicationContext.getSharedPreferences("sp", Context.MODE_PRIVATE)
+        if(sharedPreferences.contains("USERNAME") && sharedPreferences.getString("USERNAME", null).isNotEmpty()) {
+            val intent = Intent(this, ConversationListActivity::class.java)
             startActivity(intent)
         }
 
