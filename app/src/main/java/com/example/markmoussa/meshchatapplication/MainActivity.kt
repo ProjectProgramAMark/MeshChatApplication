@@ -33,5 +33,10 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, SignUpActivity::class.java)
             startActivity(intent)
         }
+
+        // Companion code to onBackPressed for having the back button exit app instead of going back to SignUpActivity
+        if(intent.getBooleanExtra("Exit me", false)){
+            finish()
+        }
     }
 }

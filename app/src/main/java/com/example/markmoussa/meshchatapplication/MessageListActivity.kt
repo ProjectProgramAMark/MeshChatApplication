@@ -62,7 +62,6 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
     override fun onStart() {
         super.onStart()
         // checking to see which user chat they want, or if it's a new message
-        // TODO: made a new separate class for new messages for now, condense that into this class when I have everything set up
 
         val hypeFramework = applicationContext as HypeLifeCycle
         val userIdentifier = intent.getLongExtra("userIdentifier", 0)
@@ -95,6 +94,7 @@ class MessageListActivity : AppCompatActivity(), Store.Delegate {
                     // Sending message via Hype
                     val onlinePeers = hypeFramework.getOnlinePeers()
                     if(onlinePeers.containsKey(userIdentifier)) {
+                        // TODO: Add check right before here to see if user is still online
                         sendMessage(text, onlinePeers[userIdentifier]!!)
                         chatBox.setText("")
                         store.add(Pair(text, true), this)

@@ -30,16 +30,6 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
     // Determines the appropriate ViewType according to the sender of the message.
     override fun getItemViewType(position: Int): Int {
         val message = mMessageList[position]
-
-        // Doesn't look like the feature for getting who sent the message is there yet
-        /* TODO: Fill this space with the correct logic (it must choose the view type based on
-         * if sending or receiving message. But Hype Messages doesn't look like it has that feature
-         * yet
-         * For now its just 0 and 1 to default to message received
-         */
-        // SendBird function
-        // message.getSender().getUserId().equals(SendBird.getCurrentUser().getUserId())
-
         return if (message.second) {
             // If the current user is the sender of the message
             VIEW_TYPE_MESSAGE_SENT
@@ -71,7 +61,6 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
     // Passes the message object to a ViewHolder so that the contents can be bound to UI.
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
 
-        // TODO: UserMessage is specific to SendBird, fix later
         val message = mMessageList[position]
 
         when (holder.itemViewType) {
@@ -101,9 +90,6 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
         internal var timeText: TextView = itemView.findViewById(R.id.text_message_time)
         internal var profileImage: ImageView = itemView.findViewById(R.id.image_message_profile) as ImageView
 
-        
-        // UserMessage is specific to SendBird, fix later
-
         internal fun bind(message: String) {
             messageText.text = message
             Log.i("DEBUG ", "Message text from adapter: ${messageText.text}")
@@ -120,7 +106,7 @@ class MessageListAdapter(private val mContext: Context, private val mMessageList
 
             //nameText.setText(message.getSender().getNickname())
 
-            // TODO: Figure out how to do this without using SendBird
+            // TODO: Figure out how to implement profile pic
             // Insert the profile image from the URL into the ImageView.
             // ImageUtils.displayRoundImageFromUrl(mContext, message.getSender().getProfileUri(), profileImage)
         }

@@ -8,7 +8,6 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
-import com.google.gson.Gson
 import com.hypelabs.hype.Error
 import com.hypelabs.hype.Hype
 import com.hypelabs.hype.Instance
@@ -20,30 +19,9 @@ import com.hypelabs.hype.StateObserver
 import java.io.*
 import kotlin.collections.HashMap
 import kotlin.properties.Delegates
-import com.google.gson.reflect.TypeToken
 
 
 class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Application() {
-
-
-    /* TODO: Try doing this:
-     * Make Instance transient in Store, since we don't really need to serialize and save it anyways
-     * since it changes every time
-     * Then make onlinePeers have a hashMap with key: userIdentifier and value: Instance
-     * Then pass the Instance of the user (most likely as an intent extra) from ConversationListActivity
-     * to MessageListActivity, and have Store use that instead
-     * May find at the end that you don't even need to have Instance in the Store constructor
-     * TODO: I don't even need onlinePeers file since the onlinePeers is only for the duration of the app runtime.
-     * Delete and replace with standard getters and setters
-     *
-     * If that doesn't solve the problem, it might be that Message is causing serialization issues
-     * in which case, as a hotfix until I figure out why Hype hasn't allowed Serialization for these
-     * Make the Store messages variable carry the Messages data (aka the text itself) instead of the
-     * Hype Message class, since we don't really need the Message object when saving things anyways
-     *
-     * If that still doesn't work, might have to write custom serializer/deserializer for Store instead
-     */
-
 
     // TODO: DO THIS SECOND - Figure out why these observables aren't working sometimes (such as messageDatabase in setMessageDatabase()
     // TODO: Consider merging messageDatabase and contactsDatabase (can do HashMap<Long, Pair<Store, User>>)
@@ -81,7 +59,6 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
 
         // MeshNetworkApp2
         Hype.setAppIdentifier("b056a7af")
-
         val sharedPreferences: SharedPreferences = applicationContext.getSharedPreferences("sp", Context.MODE_PRIVATE)
         val userIdentifier = sharedPreferences.getInt("USER_IDENTIFIER", Hype.DefaultUserIdentifier)
         Hype.setUserIdentifier(userIdentifier)
@@ -95,6 +72,10 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
     }
 
     override fun onHypeStart() {
+
+        // TODO: When you stop and start Hype again, for some reason the other users can't find you again
+        // it looks like this is due to Hype not having time to "lose" the instance before refinding it
+
         Log.i(TAG, "Hype started!")
         Log.i(TAG, "Loading store from file")
         messageDatabase = readMessageDatabase()
@@ -169,7 +150,7 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
 
         var store = getAllMessages()[instance.userIdentifier]
         if(store == null) {
-            store = Store(instance, instance.userIdentifier)
+            store = Store(instance.userIdentifier)
         }
         // Storing the message triggers a reload update in the MessageList activity
         store.add(Pair(message.data.toString(charset("UTF-8")), false), this)
@@ -283,7 +264,6 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
         updateContactsDatabase()
     }
 
-    inline fun <reified T> Gson.fromJson(json: String) = this.fromJson<T>(json, object: TypeToken<T>() {}.type)
     private fun readMessageDatabase(): HashMap<Long, Store> {
         val messageDatabaseFile = File(dirPath, "messageDatabase")
         if(!(messageDatabaseFile.exists()) || messageDatabaseFile.length() == 0.toLong()) {
@@ -301,14 +281,6 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
                 val result = ois.readObject() as HashMap<Long, Store>
                 ois.close()
 
-//                // Using GSON library instead of ObjectOutputStream for now because Instance (found in Store) is not Serializable at the moment
-//                val fis = FileInputStream(messageDatabaseFile)
-//                val ois = ObjectInputStream(fis)
-//                val jsonHashMapResult = ois.readObject().toString()
-//                ois.close()
-//                // debugging
-//                Log.d("HypeLifeCycle", "jsonHashMapResult: $jsonHashMapResult")
-//                val result: HashMap<Long, Store> = Gson().fromJson<HashMap<Long, Store>>(jsonHashMapResult)
                 // debugging
                 Log.d("HypeLifeCycle ", "reading messageDatabase (from file) is: ${result.entries.toString()}")
 
@@ -335,23 +307,13 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
                 messageDatabaseFile.createNewFile()
                 Log.d("HypeLifeCycle", "File for message database does not exist; creating new one (from update)")
             }
-            // TODO: DO THIS FIRST - figure out how to serialize messageDatabase
-            // TODO: since Instance from Hype SDK not serializable, it won't let me serialize all of messageDatabase
+            // since Instance from Hype SDK not serializable, it won't let me serialize all of messageDatabase
             val fos = FileOutputStream(messageDatabaseFile)
             val oos = ObjectOutputStream(fos)
             oos.writeObject(messageDatabase)
             // debugging
             Log.d("HypeLifeCycle", "Right after writing the file, the new file is: ${readMessageDatabase()}")
             oos.close()
-
-            // Using GSON library instead of ObjectOutputStream for now because Instance (found in Store) is not Serializable at the moment
-//            val fos = FileOutputStream(messageDatabaseFile)
-//            val gsonSerializer = Gson().toJson(messageDatabase)
-//
-//            val oos = ObjectOutputStream(fos)
-//            oos.writeObject(gsonSerializer)
-            // debugging
-            Log.d("HypeLifeCycle", "Right after writing the messageDatabase file, the new file is: ${readMessageDatabase()}")
 
             // Checking if the file is empty, meaning the messageDatabase didn't write properly
             // debugging
@@ -412,7 +374,7 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
         Log.d("HypeLifeCycle ", "New onlinePeers: " + getOnlinePeers().toString())
         if(getAllMessages()[instance.userIdentifier] == null) {
             Log.d("HypeLifeCycle", "Could not find userIdentifier in getAllMessages() (aka messageDatabase), therefore starting a brand new Store")
-            setMessageDatabase(instance.userIdentifier, Store(instance, instance.userIdentifier))
+            setMessageDatabase(instance.userIdentifier, Store(instance.userIdentifier))
             Log.d("HypeLifeCycle ", "New messageDatabase (from variable): " + getAllMessages().toString())
         }
         if(!(readContactsDatabase().containsKey(instance.userIdentifier))) {

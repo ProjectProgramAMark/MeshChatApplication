@@ -69,7 +69,6 @@ class SignUpActivity : AppCompatActivity() {
             // Making userIdentifier null in order to save space since the User object serializes to 288
             // bytes and the limit for Hype SDK for now is 255 bytes
             Hype.setAnnouncement(User(username, profilePicPath, null, profilePic).serializeUser())
-            //TODO: Add this same functionality (the setting of the Hype announcement right above) in case username isn't there (aka it's their first start)
             // Starting ConversationListActivity
             val intent = Intent(this, ConversationListActivity::class.java)
             startActivity(intent)

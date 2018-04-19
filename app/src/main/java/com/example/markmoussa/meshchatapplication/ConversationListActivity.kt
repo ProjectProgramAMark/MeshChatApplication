@@ -6,7 +6,9 @@ package com.example.markmoussa.meshchatapplication
 
 import android.arch.lifecycle.LifecycleObserver
 import android.arch.lifecycle.ProcessLifecycleOwner
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.widget.SwipeRefreshLayout
@@ -173,6 +175,19 @@ class ConversationListActivity : AppCompatActivity(), Store.Delegate, LifecycleO
             val recyclerView = findViewById<RecyclerView>(R.id.reyclerview_conversation_list) as RecyclerView
 
             (recyclerView.adapter as ConversationListAdapter).notifyDataSetChanged()
+        }
+    }
+
+    override fun onBackPressed() {
+        val sharedPreferences: SharedPreferences = applicationContext.getSharedPreferences("sp", Context.MODE_PRIVATE)
+        if(sharedPreferences.contains("USERNAME") && sharedPreferences.getString("USERNAME", null).isNotEmpty()) {
+            val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            intent.putExtra("Exit me", true)
+            startActivity(intent)
+            finish()
+        } else {
+            super.onBackPressed()
         }
     }
 

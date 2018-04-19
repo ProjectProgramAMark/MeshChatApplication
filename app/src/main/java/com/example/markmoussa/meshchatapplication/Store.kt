@@ -5,17 +5,11 @@ package com.example.markmoussa.meshchatapplication
 // link: https://github.com/Hype-Labs/HypeChatDemo.android
 
 import android.content.Context
-import com.google.gson.*
-import com.hypelabs.hype.Instance
-import com.hypelabs.hype.Message
-import org.json.JSONObject
 import java.io.Serializable
-
 import java.lang.ref.WeakReference
-import java.lang.reflect.Type
 import java.util.Vector
 
-class Store(@Transient val instance: Instance, val userIdentifier: Long): Serializable {
+class Store(val userIdentifier: Long): Serializable {
 
 
     // The Boolean in the Pair represents whether that message was sent from host or user
