@@ -6,6 +6,7 @@ import android.arch.lifecycle.LifecycleObserver
 import android.arch.lifecycle.OnLifecycleEvent
 import android.arch.lifecycle.ProcessLifecycleOwner
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 
 class LifecycleObserverActivity(context: Context) : LifecycleObserver {
@@ -20,8 +21,12 @@ class LifecycleObserverActivity(context: Context) : LifecycleObserver {
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     fun onAppForegrounded() {
         Log.i("DEBUG ", "ON APP FOREGROUNDED CALLED")
-        val hypeFramework = mContext as HypeLifeCycle
-        hypeFramework.requestHypeToStart()
+        // Don't want to start Hype immediately if it's their first time opening the app (because they need to sign up first)
+        val sharedPreferences: SharedPreferences = mContext.getSharedPreferences("sp", Context.MODE_PRIVATE)
+        if(sharedPreferences.contains("USERNAME") && sharedPreferences.getString("USERNAME", null).isNotEmpty()) {
+            val hypeFramework = mContext as HypeLifeCycle
+            hypeFramework.requestHypeToStart()
+        }
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)

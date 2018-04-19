@@ -57,13 +57,22 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
         // by creating a new app. Copy the given identifier here.
 
         // ChatApplication
-        Hype.setAppIdentifier("f370ac17")
+//        Hype.setAppIdentifier("f370ac17")
 
         // MeshNetworkApplication
-        // Hype.setAppIdentifier("9a96baaa")
+//         Hype.setAppIdentifier("9a96baaa")
 
         // MeshNetworkApp2
 //        Hype.setAppIdentifier("b056a7af")
+
+        // MeshNetwork3
+//        Hype.setAppIdentifier("d74214ee")
+
+        // MeshNetwork4
+//        Hype.setAppIdentifier("ba3ae1ae")
+
+        //MeshNetworkApplication5
+        Hype.setAppIdentifier("9cb5496c")
 
         val sharedPreferences: SharedPreferences = applicationContext.getSharedPreferences("sp", Context.MODE_PRIVATE)
         val userIdentifier = sharedPreferences.getInt("USER_IDENTIFIER", Hype.DefaultUserIdentifier)
@@ -190,13 +199,22 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
         // Access the app settings (https://hypelabs.io/apps/) to find an access token to use here.
 
         // This one is for chatApplication
-        return "903cbdd53f59e2f771cbf2a9429c91"
+//        return "903cbdd53f59e2f771cbf2a9429c91"
 
         // MeshNetworkApplication
 //        return "4e5936b294a88cf2"
 
         // MeshNetworkApp2
 //        return "4e5936b294a88cf2"
+
+        //MeshNetwork3
+//        return "9f05c13eb9276473"
+
+        //MeshNetwork4
+//        return "bf80129c2ae5e7df"
+
+        // MeshNetworkApplication5
+        return "9f05c13eb9276473"
     }
 
     override fun onCreate() {
@@ -387,6 +405,10 @@ class HypeLifeCycle : StateObserver, NetworkObserver, MessageObserver, Applicati
         }
         if(!(readContactsDatabase().containsKey(instance.userIdentifier))) {
             // restoring User object from serialized byteArray
+            if(instance.announcement == null) {
+                Log.d("Announcement null", "The Instance announcement is null")
+            }
+            Log.d("Instance announcement: ", "${instance.announcement.toString(charset("UTF-8"))}")
             val bis = ByteArrayInputStream(instance.announcement)
             val ois = ObjectInputStream(bis)
             val newUser: User = ois.readObject() as User

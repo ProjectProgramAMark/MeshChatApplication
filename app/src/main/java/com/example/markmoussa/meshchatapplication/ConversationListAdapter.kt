@@ -53,6 +53,10 @@ class ConversationListAdapter(private val mContext: Context, private val mConver
             onlineStatusIcon = itemView.findViewById<ImageView>(R.id.onlineStatusIcon) as ImageView
         }
         internal fun bind(conversation: Conversation) {
+            if(conversation.user == null) {
+                Log.e("ConvoListAdapter", "Problem with User being null here")
+                return
+            }
              if(conversation.user!!.nickname != null) {
                  usernameText.text = conversation.user.nickname
              } else {
